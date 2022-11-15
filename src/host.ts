@@ -12,17 +12,12 @@ import { RateLimit } from 'koa2-ratelimit';
 const server = new Server();
 const app = new Koa();
 
-let rateLimit = 5;
-
-// If the ApiKey is specified in ENV, we'll use that on startup.
-if (process.env['RATELIMIT']) {
-	rateLimit = Number(process.env['RATELIMIT']);
-}
-
+const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 5;
 console.log('RATE LIMIT:', rateLimit);
 
 app.use(cors());
 
+// TODO: Tune the rate limits: https://github.com/ysocorp/koa2-ratelimit
 const limiter = RateLimit.middleware({
 	interval: { min: 1 }, // 15 minutes = 15*60*1000
 	max: rateLimit, // limit each IP to X requests per interval
