@@ -4,7 +4,7 @@ export interface Store {
 
 	close(): Promise<void>;
 
-	put(document: string): Promise<void>;
+	put(id: string, document: string): Promise<void>;
 
 	get(id: string): Promise<string | undefined>;
 
