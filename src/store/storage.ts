@@ -52,4 +52,12 @@ export class Storage implements Store {
 	async delete(did: string) {
 		return this.db.del(did);
 	}
+
+	async wipe() {
+		for await (const [key, value] of this.db.iterator({})) {
+			console.log('Delete:', key);
+			console.log('Data:', value);
+			await this.db.del(key);
+		}
+	}
 }

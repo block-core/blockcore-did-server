@@ -23,4 +23,12 @@ export class Server {
 	async resolve(did: string) {
 		return this.config.store.get(did);
 	}
+
+	async update(did: string, document: string) {
+		return this.config.store.put(did, document);
+	}
+
+	async wipe() {
+		return this.config.store.wipe();
+	}
 }

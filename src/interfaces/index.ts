@@ -9,6 +9,8 @@ export interface Store {
 	get(id: string): Promise<string | undefined>;
 
 	delete(id: string): Promise<void>;
+
+	wipe(): Promise<void>;
 }
 
 export type Config = {

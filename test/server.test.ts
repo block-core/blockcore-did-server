@@ -7,6 +7,22 @@ test('Create the server', async (t) => {
 
 	await server.start();
 
-	const didResolution = await server.resolve('did:is:test');
+	await server.wipe();
+
+	let didResolution = await server.resolve('did:is:test');
 	t.assert(didResolution === undefined);
+
+	const didDocument = {
+		services: ['link'],
+	};
+
+	await server.update('did:is:test', JSON.stringify(didDocument));
+
+	didResolution = await server.resolve('did:is:test');
+	t.assert(didResolution !== undefined);
+
+	await server.update('did:is:test', JSON.stringify(didDocument));
+
+	didResolution = await server.resolve('did:is:test');
+	console.log(didResolution);
 });
