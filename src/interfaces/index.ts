@@ -16,3 +16,11 @@ export interface Store {
 export interface Config {
 	store: Store;
 }
+
+// export interface RequestSchema {
+// 	messages: BaseMessage[];
+// }
+
+// export interface BaseMessage {
+	
+// }

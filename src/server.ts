@@ -5,6 +5,8 @@ console.log(`Starting Blockcore DID Server...`);
 
 export class Server {
 	private config: Config;
+	// private textEncoder = new TextEncoder();
+	private textDecoder = new TextDecoder();
 
 	constructor() {
 		this.config = {
@@ -32,5 +34,23 @@ export class Server {
 
 	async wipe() {
 		return this.config.store.wipe();
+	}
+
+	async request(rawRequest: Uint8Array) {
+		// let request: RequestSchema;
+		let request: any;
+
+		try {
+			const requestString = this.textDecoder.decode(rawRequest);
+			request = JSON.parse(requestString);
+		} catch {
+			throw new Error('expected request to be valid JSON.');
+		}
+
+		console.log(request);
+
+		const response = { status: 'ok' };
+
+		return response;
 	}
 }
