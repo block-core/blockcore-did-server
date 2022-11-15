@@ -1,13 +1,15 @@
-import { Config } from './interfaces';
-import { Storage } from './store/storage';
+import { Config } from './interfaces/index.js';
+import { Storage } from './store/storage.js';
 
 console.log(`Starting Blockcore DID Server...`);
 
 export class Server {
-	constructor(private config: Config = {}) {
-		if (!config.store) {
-			config.store = new Storage();
-		}
+	private config: Config;
+
+	constructor() {
+		this.config = {
+			store: new Storage(),
+		};
 	}
 
 	async start() {

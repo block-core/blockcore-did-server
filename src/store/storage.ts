@@ -1,6 +1,6 @@
 import { Level } from 'level';
-import { Store } from '../interfaces';
-import { sleep } from '../utils';
+import { Store } from '../interfaces/index.js';
+import { sleep } from '../utils.js';
 
 export class Storage implements Store {
 	db: Level<string, string>;
@@ -40,7 +40,8 @@ export class Storage implements Store {
 	async get(id: string) {
 		try {
 			return await this.db.get(id);
-		} catch (err) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} catch (err: any) {
 			if (err.code === 'LEVEL_NOT_FOUND') {
 				return undefined;
 			} else {

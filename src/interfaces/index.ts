@@ -13,6 +13,6 @@ export interface Store {
 	wipe(): Promise<void>;
 }
 
-export type Config = {
-	store?: Store;
-};
+export interface Config {
+	store: Store;
+}

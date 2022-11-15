@@ -2,7 +2,15 @@
 	"name": "@blockcore/did-server",
 	"version": "0.0.1",
 	"description": "DID Server implementation that supports public sync and sharing",
-	"main": "dist/server.js",
+	"type": "module",
+	"exports": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist/**/*"
+	],
+	"engines": {
+		"node": ">=18.*"
+	},
 	"scripts": {
 		"build": "tsc",
 		"lint": "eslint .",
