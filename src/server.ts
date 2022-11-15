@@ -1,26 +1,20 @@
+import { Config } from './interfaces';
+import { Storage } from './store/storage';
+
 console.log(`Starting Blockcore DID Server...`);
 
-// Primarily done to improve testability.
-export interface Storage {
-	open(): Promise<void>;
-
-	close(): Promise<void>;
-
-    put(document: string);
-
-    get(did: string);
-
-    delete(did: string);
-}
-
-export type Config = {
-	storage: Storage;
-};
-
 export class Server {
-	constructor() {}
+	constructor(private config: Config = {}) {
+		if (!config.store) {
+			config.store = new Storage();
+		}
+	}
 
-	async start() {}
+	async start() {
+		return this.config.store.open();
+	}
 
-	async stop() {}
+	async stop() {
+		return this.config.store.close();
+	}
 }

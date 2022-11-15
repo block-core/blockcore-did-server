@@ -1,12 +1,12 @@
 import { Level } from 'level';
-import { Store } from '../server';
+import { Store } from '../interfaces';
 import { sleep } from '../utils';
 
 export class Storage implements Store {
 	db: Level<string, object>;
 
-	constructor(location: string = 'blockcore-did-server') {
-		this.db = new Level(location, { keyEncoding: 'utf8', valueEncoding: 'valueEncoding' });
+	constructor(location = 'blockcore-did-server') {
+		this.db = new Level(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
 	}
 
 	async open(): Promise<void> {
@@ -34,14 +34,14 @@ export class Storage implements Store {
 	}
 
 	put(document: string) {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented.' + document);
 	}
 
 	get(did: string) {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented.' + did);
 	}
 
 	delete(did: string) {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented.' + did);
 	}
 }
