@@ -1,31 +1,36 @@
 {
-  "name": "@blockcore/blockcore-did-server",
-  "version": "0.0.1",
-  "description": "DID Server implementation that supports public sync and sharing",
-  "main": "dist/server.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node --es-module-specifier-resolution=node dist/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "changelog": "conventional-changelog -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md"
-  },
-  "keywords": [
+	"name": "@blockcore/blockcore-did-server",
+	"version": "0.0.1",
+	"description": "DID Server implementation that supports public sync and sharing",
+	"main": "dist/server.js",
+	"scripts": {
+		"build": "tsc",
+		"start": "node --es-module-specifier-resolution=node dist/server.js",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"changelog": "conventional-changelog -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md"
+	},
+	"keywords": [
 		"web5",
 		"did",
 		"blockcore",
-    "identity"
+		"identity"
 	],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/block-core/blockcore-did-server.git"
-  },
-  "author": "Blockcore",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/block-core/blockcore-did-server/issues"
-  },
-  "homepage": "https://github.com/block-core/blockcore-did-server#readme",
-  "dependencies": {
-    "level": "^8.0.0"
-  }
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/block-core/blockcore-did-server.git"
+	},
+	"author": "Blockcore",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/block-core/blockcore-did-server/issues"
+	},
+	"homepage": "https://github.com/block-core/blockcore-did-server#readme",
+	"dependencies": {
+		"level": "^8.0.0"
+	},
+	"devDependencies": {
+		"@blockcore/tsconfig": "^0.0.1",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.8.4"
+	}
 }
