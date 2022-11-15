@@ -1,14 +1,35 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import Koa from 'koa';
 import cors from '@koa/cors';
 import { koaSwagger } from 'koa2-swagger-ui';
 import getRawBody from 'raw-body';
 import Router from 'koa-router';
 import { Server } from './server';
+import { RateLimit } from 'koa2-ratelimit';
 
 const server = new Server();
 const app = new Koa();
 
+let rateLimit = 5;
+
+// If the ApiKey is specified in ENV, we'll use that on startup.
+if (process.env['RATELIMIT']) {
+	rateLimit = Number(process.env['RATELIMIT']);
+}
+
+console.log('RATE LIMIT:', rateLimit);
+
 app.use(cors());
+
+const limiter = RateLimit.middleware({
+	interval: { min: 1 }, // 15 minutes = 15*60*1000
+	max: rateLimit, // limit each IP to X requests per interval
+});
+
+//  apply to all requests
+app.use(limiter);
 
 app.use(async (ctx, next) => {
 	ctx.body = await getRawBody(ctx.req);
@@ -32,7 +53,7 @@ router.post('/', async (ctx, _next) => {
 });
 
 router.get('/', async (ctx, _next) => {
-	setResponse({ "online": "true" }, ctx.response);
+	setResponse({ online: 'true' }, ctx.response);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
