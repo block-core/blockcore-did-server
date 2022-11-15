@@ -3,13 +3,13 @@ import { Store } from '../interfaces';
 import { sleep } from '../utils';
 
 export class Storage implements Store {
-	db: Level<string, object>;
+	db: Level<string, string>;
 
 	constructor(location = 'blockcore-did-server') {
 		this.db = new Level(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
 	}
 
-	async open(): Promise<void> {
+	async open() {
 		while (this.db.status === 'opening' || this.db.status === 'closing') {
 			await sleep(150);
 		}
@@ -21,7 +21,7 @@ export class Storage implements Store {
 		return this.db.open();
 	}
 
-	async close(): Promise<void> {
+	async close() {
 		while (this.db.status === 'opening' || this.db.status === 'closing') {
 			await sleep(150);
 		}
@@ -33,15 +33,23 @@ export class Storage implements Store {
 		return this.db.close();
 	}
 
-	put(document: string) {
-		throw new Error('Method not implemented.' + document);
+	async put(id: string, document: string) {
+		return this.db.put(id, document);
 	}
 
-	get(did: string) {
-		throw new Error('Method not implemented.' + did);
+	async get(id: string) {
+		try {
+			return await this.db.get(id);
+		} catch (err) {
+			if (err.code === 'LEVEL_NOT_FOUND') {
+				return undefined;
+			} else {
+				throw err;
+			}
+		}
 	}
 
-	delete(did: string) {
-		throw new Error('Method not implemented.' + did);
+	async delete(did: string) {
+		return this.db.del(did);
 	}
 }

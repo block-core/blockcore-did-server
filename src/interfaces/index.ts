@@ -4,11 +4,11 @@ export interface Store {
 
 	close(): Promise<void>;
 
-	put(document: string);
+	put(document: string): Promise<void>;
 
-	get(did: string);
+	get(id: string): Promise<string | undefined>;
 
-	delete(did: string);
+	delete(id: string): Promise<void>;
 }
 
 export type Config = {
