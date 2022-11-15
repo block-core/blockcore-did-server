@@ -1,5 +1,5 @@
 {
-	"name": "@blockcore/blockcore-did-server",
+	"name": "@blockcore/did-server",
 	"version": "0.0.1",
 	"description": "DID Server implementation that supports public sync and sharing",
 	"main": "dist/server.js",
