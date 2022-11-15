@@ -17,4 +17,10 @@ export class Server {
 	async stop() {
 		return this.config.store.close();
 	}
+
+	// https://github.com/block-core/blockcore-did-resolver
+	/** This is a generic resolve method that is to be used by the Universal DID Resolver */
+	async resolve(did: string) {
+		return this.config.store.get(did);
+	}
 }
