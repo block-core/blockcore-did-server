@@ -1,0 +1,19 @@
+{
+  "name": "blockcore-did-server",
+  "version": "0.0.1",
+  "description": "DID Server implementation that supports public sync and sharing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/block-core/blockcore-did-server.git"
+  },
+  "author": "Blockcore",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/block-core/blockcore-did-server/issues"
+  },
+  "homepage": "https://github.com/block-core/blockcore-did-server#readme"
+}
