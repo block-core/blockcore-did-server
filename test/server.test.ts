@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Server } from '../src/';
+import { Server } from '../src/server.js';
 
 test('Create the server', async (t) => {
 	const server = new Server();
