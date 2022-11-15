@@ -1,0 +1,14 @@
+version: '2.4'
+services:
+  host:
+    container_name: blockcore-did-server
+    restart: unless-stopped
+    # image: blockcore/blockcore-vault
+    build: .
+    environment:
+      - NODE_ENV=production
+      #- API_KEY= # Use to specify the initial API KEY to be used.
+    ports:
+      - 4250:4250
+    # volumes:
+    #   - ./:/code
