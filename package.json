@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/block-core/blockcore-did-server/issues"
   },
-  "homepage": "https://github.com/block-core/blockcore-did-server#readme"
+  "homepage": "https://github.com/block-core/blockcore-did-server#readme",
+  "dependencies": {
+    "level": "^8.0.0"
+  }
 }
