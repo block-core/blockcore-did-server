@@ -1,12 +1,20 @@
 {
-  "name": "blockcore-did-server",
+  "name": "@blockcore/blockcore-did-server",
   "version": "0.0.1",
   "description": "DID Server implementation that supports public sync and sharing",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node --es-module-specifier-resolution=node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "changelog": "conventional-changelog -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md"
   },
+  "keywords": [
+		"web5",
+		"did",
+		"blockcore",
+    "identity"
+	],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/block-core/blockcore-did-server.git"
