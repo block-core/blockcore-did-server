@@ -37,7 +37,7 @@ test('Generate DID Document', async (t) => {
 		id: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd',
 		verificationMethod: [
 			{
-				id: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#key-1',
+				id: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#key1',
 				type: 'EcdsaSecp256k1VerificationKey2019',
 				controller: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd',
 				publicKeyBase58: 'wAAADkMFQkqxaUPB8jGq4ZoJVsaK9Y5M8riM76zugM6d',
@@ -45,23 +45,23 @@ test('Generate DID Document', async (t) => {
 		],
 		service: [
 			{
-				id: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#blockexplorer',
+				id: '#blockexplorer',
 				type: 'BlockExplorer',
 				serviceEndpoint: 'https://explorer.blockcore.net',
 			},
 			{
-				id: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#didresolver',
+				id: '#didresolver',
 				type: 'DIDResolver',
 				serviceEndpoint: 'https://my.did.is',
 			},
 			{
-				id: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#edv',
+				id: '#edv',
 				type: 'EncryptedDataVault',
 				serviceEndpoint: 'https://vault.blockcore.net/',
 			},
 		],
-		authentication: ['did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#key-1'],
-		assertionMethod: ['did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#key-1'],
+		authentication: ['#key1'],
+		assertionMethod: ['did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd'],
 	};
 
 	const payload = {
@@ -69,7 +69,7 @@ test('Generate DID Document', async (t) => {
 		operation: 'create',
 		sequence: 0,
 		rule: 1,
-		timestamp: Math.floor(Date.now() / 1000),
+		iat: Math.floor(Date.now() / 1000),
 		content: didDocument,
 	};
 

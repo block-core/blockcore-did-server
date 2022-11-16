@@ -42,14 +42,14 @@ Decoded JWS:
 
 ```json
 {
-  "kid": "did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#key-1",
+  "kid": "did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd",
   "alg": "ES256K"
 }.{
   "type": "identity",
   "operation": "create",
   "sequence": 0,
   "rules": [1], // Not required
-  "timestamp": 1668606262,
+  "iat": 1668606262,
   "content": { }
 }.[Signature]
 ```
