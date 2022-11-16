@@ -29,56 +29,5 @@ test('Create the server', async (t) => {
 });
 
 test('Generate DID Document', async (t) => {
-	/** Signs a payload and encodes as JWT (JWS). The key should be in string format (hex, base58, base64). Adds "iat", "iss" to payload and "typ" to header. */
-	const privateKey = Uint8Array.from([224, 238, 59, 150, 73, 84, 228, 234, 104, 62, 83, 160, 122, 31, 108, 129, 74, 29, 104, 195, 192, 81, 158, 11, 167, 100, 217, 121, 110, 12, 178, 14]);
-	const signer = ES256KSigner(privateKey);
 
-	const didDocument = {
-		id: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd',
-		verificationMethod: [
-			{
-				id: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#key1',
-				type: 'EcdsaSecp256k1VerificationKey2019',
-				controller: 'did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd',
-				publicKeyBase58: 'wAAADkMFQkqxaUPB8jGq4ZoJVsaK9Y5M8riM76zugM6d',
-			},
-		],
-		service: [
-			{
-				id: '#blockexplorer',
-				type: 'BlockExplorer',
-				serviceEndpoint: 'https://explorer.blockcore.net',
-			},
-			{
-				id: '#didresolver',
-				type: 'DIDResolver',
-				serviceEndpoint: 'https://my.did.is',
-			},
-			{
-				id: '#edv',
-				type: 'EncryptedDataVault',
-				serviceEndpoint: 'https://vault.blockcore.net/',
-			},
-		],
-		authentication: ['#key1'],
-		assertionMethod: ['did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd'],
-	};
-
-	const payload = {
-		type: 'identity',
-		operation: 'create',
-		sequence: 0,
-		rule: 1,
-		iat: Math.floor(Date.now() / 1000),
-		content: didDocument,
-	};
-
-	const jwt = await createJWS(payload, signer, { kid: didDocument.verificationMethod[0].id });
-	console.log(jwt);
-
-	// const jws = await createJWS(payload, signer, {});
-	// console.log(jws);
-
-	const decoded = decodeJWT(jwt);
-	console.log(decoded);
 });
