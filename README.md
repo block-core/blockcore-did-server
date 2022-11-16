@@ -10,7 +10,7 @@ Blockcore uses this software to host the public available "did:is" DID Method.
 
 The DID Server is a straight forward service that stores and allows updates to DID Documents. All requests to the APIs are in the form of signed JWTs (JWS).
 
-The first create opperation requires the verificationMethod to contain the public key that is used to derive the DID, e.g. "did:is:publickey".
+The first key in the verificationMethod is required to be the public key that is used to derive the DID, e.g. "did:is:publickey".
 
 Operations must be signed with a key in the `authentication` section of the DID Document. All keys in `authentication` can be updated through key rotation.
 
@@ -84,9 +84,7 @@ Nothing special is applied, this is the same as having an empty array or not "ru
 
 ### Rule: 1
 
-The "kid" provided as the foundation for the derived DID identifier can only be used for the initial create operation. It can never be used to update the DID Document in the future. When this rule is used, the server will also require that there are at minimum 2 keys defined in the verificationMethod.
-
-This rule can be used to ensure key rotation will be possible for all keys that have permission to modify the DID Document.
+[RULE HAS BEEN DROPPED]
 
 ### Rule: 2
 
