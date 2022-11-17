@@ -13,7 +13,7 @@ const server = new Server();
 const app = new Koa();
 
 const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 5;
-console.log('RATE LIMIT:', rateLimit);
+console.log(`RATE LIMIT: ${rateLimit} rpm`);
 
 app.use(cors());
 
@@ -42,13 +42,14 @@ app.use(
 
 const router = new Router();
 router.post('/', async (ctx, _next) => {
+	console.log(ctx);
 	const response = await server.request(ctx.body);
 	console.log('RESPONSE:', response);
 	setResponse(response, ctx.response);
 });
 
 router.get('/', async (ctx, _next) => {
-	setResponse({ online: 'true' }, ctx.response);
+	setResponse({ online: 'true', help: 'https://github.com/block-core/blockcore-did-server' }, ctx.response);
 });
 
 app.use(router.routes()).use(router.allowedMethods());

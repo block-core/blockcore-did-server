@@ -17,10 +17,38 @@ export interface Config {
 	store: Store;
 }
 
-// export interface RequestSchema {
-// 	messages: BaseMessage[];
+export interface DIDDocument {
+	id: string;
+	verificationMethod: VerificationMethod[];
+	service: Service[];
+	authentication: string[] | any[];
+	assertionMethod: string[] | any[];
+}
+
+export interface VerificationMethod {
+	id: string;
+	type: string;
+	controller: string;
+	publicKeyJwk: JsonWebKey;
+}
+
+export interface Service {
+	id: string;
+	type: string;
+	serviceEndpoint: string;
+}
+
+// export interface IDIDDocumentResolutionMetadata {
+// 	error?: string;
+// 	proof?: JwtProof2020;
 // }
 
-// export interface BaseMessage {
-	
+// export interface IDIDDocumentMetadata {
+// 	created?: Date;
+// 	updated?: Date;
+// 	decativated?: boolean;
+// 	nextUpdate?: any;
+// 	versionId?: string;
+// 	nextVerionId?: string;
+// 	equivalentId?: string;
 // }

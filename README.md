@@ -42,59 +42,47 @@ Decoded JWS:
 
 ```json
 {
-  "kid": "did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd",
+  "kid": "did:is:PMW1Ks7h4brpN8FdDVLwhPDKJ7LdA7mVdd#key0",
   "alg": "ES256K"
 }.{
-  "type": "identity",
-  "operation": "create",
-  "sequence": 0,
-  "rules": [1], // Not required
+  "version": 0,
   "iat": 1668606262,
   "content": { }
 }.[Signature]
 ```
 
-### kid
+### "kid"
 
-The "kid" is the Key ID available in the current document upon `"operation": "create"` or in the existing (`sequence - 1`) DID Document.
+The "kid" is the Key ID available in the current document upon `"version": 0` or in the existing (`version - 1`) DID Document.
 
-### operation
+### "iat"
 
-Must be either: `create`, `update`, `delete`, `restore`.
+Issued at, this should be the time at which the user generates the DID Document. It is not verified any further.
 
-When performing a delete operation, a rule can be applied to indicate what type of delete is requested to be performed. It does not mean that host of the DID Server will respect the request, but the intentions will be made clear.
+### "version"
 
-delete with rule `2` applied, means the user want the entire history of the DID Document to be wiped. This is essentially a request to be "forgotten" and all history removed. A normal delete without rule `2` applied, will still be accessible using the date-based query parameters to retrieve older DID Documents.
+Version 0 indicates that this is a new DID Document and other rules are applied than updates.
+Version 1 or higher indicates that this is an updated DID Document and other rules are applied.
 
-Delete requires the content to be empty and will be stored as a empty entry. Queries against the DID in the future will return empty result, not `404 not found`.
+### "content"
 
-Ability to query historically can be important in cases where verification must be made back-in-time after the DID Document has updated with new keys, etc.
+This is the DID Document. Can be empty, which means the user want to delete the DID Document. If a delete is performed the DID Document can never be restored again.
 
-Restore
+#### Version 0 rules
 
-## Rules
+There cannot exist any other DID Document already with the same DID Subject.
 
-Operations can specify an optional array of rules that indicates to the server what kind of consensus rules that should be applied to the request.
+#### Version 1 rules
 
-Rules can only be expanded from a document, never removed (when performing an update, the same rules or additional rules must be part of the request). You need to create a completely new entry with sequence 0 to define no, or other rules.
+The version must be +1 from the current synced document.
 
-### Rule: 0
+### POST
 
-Nothing special is applied, this is the same as having an empty array or not "rules" entry at all.
+The server hosts a generic endpoint at the root that can receive the JWS as a raw binary object through a POST method.
 
-### Rule: 1
+## Request to be forgotten
 
-[RULE HAS BEEN DROPPED]
-
-### Rule: 2
-
-This indicates the user want the entire history of the DID Document to be wiped.
-
-This is essentially a request to be "forgotten" and all history removed.
-
-It is up to individual DID Server operators to have this feature enabled or disabled. The default value is enabled, allowing DID Documents to be wiped from storage entirely.
-
-For certain setups it might be required to not allow a full delete of history, so individual instances of the DID Server can run with different rules in regards to delete of history.
+There will in the future be a separate API that anyone can use to request a complete history wipe of their DID Document history. This API will allow users to provide an encrypted personal message for the DID Server host (public key discoverable using the .well-known configuration).
 
 ## Manual Delete
 
