@@ -35,8 +35,10 @@
 	},
 	"homepage": "https://github.com/block-core/blockcore-did-server#readme",
 	"dependencies": {
+		"@blockcore/identity": "^0.0.7",
 		"@koa/cors": "4.0.0",
 		"did-jwt": "^6.9.0",
+		"did-resolver": "^4.0.1",
 		"dotenv": "16.0.3",
 		"install": "^0.13.0",
 		"koa": "2.13.4",
@@ -44,7 +46,6 @@
 		"koa2-ratelimit": "^1.1.2",
 		"koa2-swagger-ui": "5.6.0",
 		"level": "8.0.0",
-		"npm": "^9.1.1",
 		"raw-body": "^2.5.1"
 	},
 	"devDependencies": {
@@ -63,7 +64,7 @@
 		"eslint-plugin-n": "15.5.1",
 		"eslint-plugin-promise": "6.1.1",
 		"ts-node": "10.9.1",
-		"typescript": "4.8.4"
+		"typescript": "4.9.3"
 	},
 	"ava": {
 		"files": [

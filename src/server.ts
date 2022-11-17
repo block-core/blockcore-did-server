@@ -1,7 +1,8 @@
 import { decodeJWT } from 'did-jwt';
 import { JWTDecoded } from 'did-jwt/lib/JWT.js';
-import { Config, DIDDocument } from './interfaces/index.js';
+import { Config, DIDDocument, VerificationMethod } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
+import { BlockcoreIdentityTools, BlockcoreIdentity } from '@blockcore/identity';
 
 console.log(`Starting Blockcore DID Server...`);
 
@@ -9,6 +10,7 @@ export class Server {
 	private config: Config;
 	// private textEncoder = new TextEncoder();
 	private textDecoder = new TextDecoder();
+	private tools = new BlockcoreIdentityTools();
 
 	constructor() {
 		this.config = {
@@ -61,7 +63,7 @@ export class Server {
 
 		this.validateDidDocument(jws.payload['didDocument']);
 
-		// this.validateDidSubject(jws.header['kid'], jws.payload['didDocument']);
+		this.validateVerificationMethod(jws.header['kid'], Number(jws.payload['version']), jws.payload['didDocument']);
 
 		// this.validateSignature();
 
@@ -79,7 +81,7 @@ export class Server {
 			throw new Error('The header.kid must be set.');
 		}
 
-		if (jws.payload['version'] == null || jws.payload['version'] == '') {
+		if (jws.payload['version'] === undefined || jws.payload['version'] === null || jws.payload['version'] === '') {
 			throw new Error('The payload.version must be set.');
 		}
 
@@ -89,6 +91,12 @@ export class Server {
 
 		if (!jws.payload.iat) {
 			throw new Error('The payload.iat must be set.');
+		}
+	}
+
+	validateKey(jwk: JsonWebKey) {
+		if (jwk.kty !== 'EC' || jwk.crv !== 'secp256k1') {
+			throw new Error('Invalid jwk. kty MUST be EC. crv MUST be secp256k1.');
 		}
 	}
 
@@ -102,20 +110,34 @@ export class Server {
 		}
 	}
 
-	// private validateDidSubject(keyId: string, didDocument: DIDDocument) {
-	// 	const did = didDocument.id;
+	private validateVerificationMethod(kid: string, version: number, didDocument: DIDDocument) {
+		// const [did, key] = kid.split('#');
 
-	// 	// If the key ID begins with "#", it is not fully qualified.
-	// 	if (keyId[0] == '#') {
-	// 		didDocument.verificationMethod;
-	// 	}
+		let verificationMethod: VerificationMethod | undefined;
 
-	// 	if (!didDocument.id) {
-	// 		throw new Error('The didDocument.id must be set.');
-	// 	}
+		for (const vm of didDocument.verificationMethod) {
+			if (kid.endsWith(vm.id)) {
+				verificationMethod = vm;
+				break;
+			}
+		}
 
-	// 	if (!didDocument.verificationMethod || didDocument.verificationMethod.length < 1) {
-	// 		throw new Error('The didDocument.verificationMethod must be set and contain minimum one entry.');
-	// 	}
-	// }
+		if (!verificationMethod) {
+			throw new Error('Verification key needed to verify request was not found in DID Document.');
+		}
+
+		this.validateKey(verificationMethod.publicKeyJwk);
+
+		// If the version is 0, we will require that the initial request is signed with a key that verifies the actual DID ID.
+		if (version === 0) {
+			// Verify that the public key of the verificationMethod found generates the correct DID Subject.
+			const identifier = this.tools.getIdentifierFromJsonWebKey(verificationMethod.publicKeyJwk);
+			const didId = `${BlockcoreIdentity.PREFIX}:${identifier}`;
+
+			// The derived identfier from the initial key signing the request MUST equal the DID ID.
+			if (didId !== didDocument.id) {
+				throw new Error('The DID ID does not correspond to the key provided in the request.');
+			}
+		}
+	}
 }
