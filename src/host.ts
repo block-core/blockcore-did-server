@@ -48,14 +48,26 @@ router.post('/', async (ctx, _next) => {
 	setResponse(response, ctx.response);
 });
 
+router.get('/1.0/identifiers/:did', async (ctx, _next) => {
+	// ctx.request.ip
+	const did = String(ctx.params['did']);
+	const didDocument = await server.resolve(did);
+
+	if (!didDocument) {
+		ctx.response.status = 404;
+		ctx.response.body = '404 Not Found';
+	} else {
+		setResponse(didDocument, ctx.response);
+	}
+});
+
 router.get('/', async (ctx, _next) => {
-	setResponse({ online: 'true', help: 'https://github.com/block-core/blockcore-did-server' }, ctx.response);
+	setResponse({ online: 'true', example: '/1.0/identifiers/did:is:0f254e55a2633d468e92aa7dd5a76c0c9101fab8e282c8c20b3fefde0d68f217' }, ctx.response);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
 
 app.use((ctx, _next) => {
-	console.log('BAD REQUEST!!');
 	ctx.response.status = 400;
 });
 
@@ -73,5 +85,6 @@ try {
 const setResponse = (response: any, koaResponse: Koa.Response) => {
 	koaResponse.status = response.status ? response.status : 200;
 	koaResponse.set('Content-Type', 'application/json');
-	koaResponse.body = JSON.stringify(response);
+	// koaResponse.body = JSON.stringify(response);
+	koaResponse.body = response;
 };

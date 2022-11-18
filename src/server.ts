@@ -1,5 +1,6 @@
-import { decodeJWT } from 'did-jwt';
+import { decodeJWT, verifyJWS } from 'did-jwt';
 import { JWTDecoded } from 'did-jwt/lib/JWT.js';
+import { JsonWebKey, DIDResolutionResult } from 'did-resolver';
 import { Config, DIDDocument, VerificationMethod } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
 import { BlockcoreIdentityTools, BlockcoreIdentity } from '@blockcore/identity';
@@ -28,8 +29,43 @@ export class Server {
 
 	// https://github.com/block-core/blockcore-did-resolver
 	/** This is a generic resolve method that is to be used by the Universal DID Resolver */
-	async resolve(did: string) {
-		return this.config.store.get(did);
+	async resolve(did: string): Promise<DIDResolutionResult> {
+		if (!did.startsWith(BlockcoreIdentity.PREFIX)) {
+			return {
+				didDocument: null,
+				didDocumentMetadata: {},
+				didResolutionMetadata: { error: 'unsupportedDidMethod' },
+			};
+		}
+
+		const jws: JWTDecoded = await this.config.store.get(did);
+
+		if (!jws) {
+			return {
+				didDocument: null,
+				didDocumentMetadata: {
+					nextVersionId: '0',
+				},
+				didResolutionMetadata: { error: 'notFound' },
+			};
+		}
+
+		const result: DIDResolutionResult = {
+			didDocument: jws.payload['didDocument'],
+			didDocumentMetadata: {
+				nextVersionId: String(Number(jws.payload['version']) + 1),
+				updated: String(jws.payload.iat),
+				// created: jws.payload.iat,
+				deactivated: false,
+				proof: `${jws.data}.${jws.signature}`,
+			},
+			didResolutionMetadata: {
+				contentType: 'application/did+json',
+				retrieved: this.tools.getTimestampInSeconds(),
+			},
+		};
+
+		return result;
 	}
 
 	async update(did: string, document: string) {
@@ -53,23 +89,82 @@ export class Server {
 
 		try {
 			jws = decodeJWT(requestBody);
-			console.log(jws);
 		} catch {
 			throw new Error('Expected body to be valid JSON Web Token.');
 		}
 
-		// Runs a basic validation on the deserialized values.
 		this.validateJws(jws);
 
-		this.validateDidDocument(jws.payload['didDocument']);
+		const did = this.getIdFromKid(jws.header['kid']);
 
-		this.validateVerificationMethod(jws.header['kid'], Number(jws.payload['version']), jws.payload['didDocument']);
+		// The didDocument can be empty if the request is a delete one.
+		if (jws.payload['didDocument']) {
+			this.validateDidDocument(jws.payload['didDocument']);
+		}
 
-		// this.validateSignature();
+		let verificationMethod: VerificationMethod;
+		let item: any;
+
+		// If the version is 0, we don't have an existing DID Document to resolve.
+		if (Number(jws.payload['version']) === 0) {
+			// The first key in verificationMethod must ALWAYS be the key used to derive the DID ID.
+			const verificationMethodID = this.validateIdentifier(jws.payload['didDocument']);
+
+			// Get the verification method specified in the kid directly from payload when creating DID Document for the first time.
+			verificationMethod = this.getAuthenticationMethod(jws.header['kid'], jws.payload['didDocument']);
+
+			// Ensure that the first verificationMethod and authentication is the same upon initial create.
+			if (!this.equalKeys(verificationMethod.publicKeyJwk, verificationMethodID.publicKeyJwk)) {
+				throw new Error('The first verificationMethod key must be the same as the kid for DID Document creation operation.');
+			}
+
+			item = await this.resolve(did);
+
+			if (item != null) {
+				throw new Error('The DID Document already exists. You must increase the version number. Resolve the existing DID Document to get latest version id.');
+			}
+
+			// TODO: Check if already exists in database.
+		} else {
+			item = await this.resolve(did);
+
+			if (item == null) {
+				throw new Error(`The DID Document does not exists on this server, you must set version to 0 to create a new DID Document.`);
+			}
+
+			// TODO: REPLACE THIS WITH DATABASE RESULT
+			verificationMethod = this.getAuthenticationMethod(jws.header['kid'], jws.payload['didDocument']);
+		}
+
+		// Validate the signature of the selected verification method used in the kid and the raw jws payload.
+		this.validateSignature(requestBody, verificationMethod);
+
+		// Store the decoded document:
+		await this.config.store.put(did, jws);
+
+		// const key = this.validateVerificationMethod(jws.header['kid'], Number(jws.payload['version']), jws.payload['didDocument']);
+
+		// this.validateIdentifier(verificationMethod, jws.payload['didDocument']);
+
+		// // Upon initial creation, we require that the key the DID ID is derived from, must be the "kid".
+		// if (Number(jws.payload['version']) === 0) {
+		// 	this.validateIdentifier(verificationMethod, jws.payload['didDocument']);
+		// }
+
+		// this.validateSignature(requestBody);
 
 		const response = { status: 200, result: 'saved' };
 
 		return response;
+	}
+
+	private getIdFromKid(kid: string): string {
+		const [id] = kid.split('#');
+		return String(id);
+	}
+
+	private equalKeys(key1: JsonWebKey, key2: JsonWebKey) {
+		return key1.x === key2.x && key1.y === key1.y && key1.crv === key2.crv;
 	}
 
 	private validateJws(jws: JWTDecoded) {
@@ -94,7 +189,13 @@ export class Server {
 		}
 	}
 
-	validateKey(jwk: JsonWebKey) {
+	private async validateSignature(jws: string, verificationMethod: VerificationMethod) {
+		const result = await verifyJWS(jws, verificationMethod);
+		console.log(result);
+		return result;
+	}
+
+	private validateKey(jwk: JsonWebKey) {
 		if (jwk.kty !== 'EC' || jwk.crv !== 'secp256k1') {
 			throw new Error('Invalid jwk. kty MUST be EC. crv MUST be secp256k1.');
 		}
@@ -105,20 +206,60 @@ export class Server {
 			throw new Error('The didDocument.id must be set.');
 		}
 
-		if (!didDocument.verificationMethod || didDocument.verificationMethod.length < 1) {
-			throw new Error('The didDocument.verificationMethod must be set and contain minimum one entry.');
+		if (!didDocument.authentication || didDocument.authentication.length < 1) {
+			throw new Error('The didDocument.authentication must be set and contain minimum one entry.');
 		}
 	}
 
-	private validateVerificationMethod(kid: string, version: number, didDocument: DIDDocument) {
-		// const [did, key] = kid.split('#');
+	/** If the version is 0, we will require that the initial request is signed with a key that verifies the actual DID ID. */
+	private validateIdentifier(didDocument: DIDDocument) {
+		if (didDocument.verificationMethod.length == 0 || didDocument.verificationMethod[0] == null) {
+			throw new Error('The list of verificationMethod must be 1 or more.');
+		}
 
+		// Get the first verificationMethod, which must always be there.
+		const verificationMethod = didDocument.verificationMethod[0];
+		this.validateKey(verificationMethod.publicKeyJwk);
+
+		// Verify that the public key of the verificationMethod found generates the correct DID Subject.
+		const identifier = this.tools.getIdentifierFromJsonWebKey(verificationMethod.publicKeyJwk);
+		const didId = `${BlockcoreIdentity.PREFIX}:${identifier}`;
+
+		// The derived identfier from the initial key signing the request MUST equal the DID ID.
+		if (didId !== didDocument.id) {
+			throw new Error('The DID ID does not correspond to the key provided in the request.');
+		}
+
+		return verificationMethod;
+	}
+
+	/** Attempts to find the verificationMethod (key) specified in the kid among items in the "authentcation" list. */
+	private getAuthenticationMethod(kid: string, didDocument: DIDDocument): VerificationMethod {
 		let verificationMethod: VerificationMethod | undefined;
+		let keyId = '';
 
-		for (const vm of didDocument.verificationMethod) {
-			if (kid.endsWith(vm.id)) {
-				verificationMethod = vm;
-				break;
+		for (const vm of didDocument.authentication) {
+			// Check if the key is a reference of full value:
+			if (typeof vm === 'string') {
+				if (kid.endsWith(vm)) {
+					keyId = vm;
+					break;
+				}
+			} else {
+				if (kid.endsWith(vm.id)) {
+					verificationMethod = vm;
+					break;
+				}
+			}
+		}
+
+		// If the vm that was found is string, we need to look up in the verificationMethod list.
+		if (keyId) {
+			for (const vm of didDocument.verificationMethod) {
+				if (keyId.endsWith(vm.id)) {
+					verificationMethod = vm;
+					break;
+				}
 			}
 		}
 
@@ -126,18 +267,6 @@ export class Server {
 			throw new Error('Verification key needed to verify request was not found in DID Document.');
 		}
 
-		this.validateKey(verificationMethod.publicKeyJwk);
-
-		// If the version is 0, we will require that the initial request is signed with a key that verifies the actual DID ID.
-		if (version === 0) {
-			// Verify that the public key of the verificationMethod found generates the correct DID Subject.
-			const identifier = this.tools.getIdentifierFromJsonWebKey(verificationMethod.publicKeyJwk);
-			const didId = `${BlockcoreIdentity.PREFIX}:${identifier}`;
-
-			// The derived identfier from the initial key signing the request MUST equal the DID ID.
-			if (didId !== didDocument.id) {
-				throw new Error('The DID ID does not correspond to the key provided in the request.');
-			}
-		}
+		return verificationMethod;
 	}
 }

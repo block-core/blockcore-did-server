@@ -37,6 +37,7 @@
 	"dependencies": {
 		"@blockcore/identity": "^0.0.7",
 		"@koa/cors": "4.0.0",
+		"abstract-level": "^1.0.3",
 		"did-jwt": "^6.9.0",
 		"did-resolver": "^4.0.1",
 		"dotenv": "16.0.3",

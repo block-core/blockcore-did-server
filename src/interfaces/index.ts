@@ -1,12 +1,14 @@
+import { JsonWebKey } from 'did-resolver';
+
 // Primarily done to improve testability.
 export interface Store {
 	open(): Promise<void>;
 
 	close(): Promise<void>;
 
-	put(id: string, document: string): Promise<void>;
+	put(id: string, document: any): Promise<void>;
 
-	get(id: string): Promise<string | undefined>;
+	get(id: string): Promise<any | undefined>;
 
 	delete(id: string): Promise<void>;
 
