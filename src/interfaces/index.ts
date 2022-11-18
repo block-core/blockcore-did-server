@@ -1,5 +1,3 @@
-import { JsonWebKey } from 'did-resolver';
-
 // Primarily done to improve testability.
 export interface Store {
 	open(): Promise<void>;
@@ -19,20 +17,20 @@ export interface Config {
 	store: Store;
 }
 
-export interface DIDDocument {
-	id: string;
-	verificationMethod: VerificationMethod[];
-	service: Service[];
-	authentication: string[] | any[];
-	assertionMethod: string[] | any[];
-}
+// export interface DIDDocument {
+// 	id: string;
+// 	verificationMethod: VerificationMethod[];
+// 	service: Service[];
+// 	authentication: string[] | any[];
+// 	assertionMethod: string[] | any[];
+// }
 
-export interface VerificationMethod {
-	id: string;
-	type: string;
-	controller: string;
-	publicKeyJwk: JsonWebKey;
-}
+// export interface VerificationMethod {
+// 	id: string;
+// 	type: string;
+// 	controller: string;
+// 	publicKeyJwk: JsonWebKey;
+// }
 
 export interface Service {
 	id: string;

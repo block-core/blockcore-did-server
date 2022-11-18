@@ -1,7 +1,7 @@
 import { decodeJWT, verifyJWS } from 'did-jwt';
 import { JWTDecoded } from 'did-jwt/lib/JWT.js';
-import { JsonWebKey, DIDResolutionResult } from 'did-resolver';
-import { Config, DIDDocument, VerificationMethod } from './interfaces/index.js';
+import { JsonWebKey, DIDResolutionResult, DIDDocument, VerificationMethod } from 'did-resolver';
+import { Config } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
 import { BlockcoreIdentityTools, BlockcoreIdentity } from '@blockcore/identity';
 
@@ -115,19 +115,21 @@ export class Server {
 			this.validateDidDocument(jws.payload['didDocument']);
 		}
 
+		let item: DIDResolutionResult;
+
+		// The first key in verificationMethod must ALWAYS be the key used to derive the DID ID.
+		const verificationMethodID = this.validateIdentifier(jws.payload['didDocument']);
+
 		let verificationMethod: VerificationMethod;
-		let item: any;
 
 		// If the version is 0, we don't have an existing DID Document to resolve.
 		if (Number(jws.payload['version']) === 0) {
-			// The first key in verificationMethod must ALWAYS be the key used to derive the DID ID.
-			const verificationMethodID = this.validateIdentifier(jws.payload['didDocument']);
-
 			// Get the verification method specified in the kid directly from payload when creating DID Document for the first time.
 			verificationMethod = this.getAuthenticationMethod(jws.header['kid'], jws.payload['didDocument']);
 
 			// Ensure that the first verificationMethod and authentication is the same upon initial create.
-			if (!this.equalKeys(verificationMethod.publicKeyJwk, verificationMethodID.publicKeyJwk)) {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			if (!this.equalKeys(verificationMethod.publicKeyJwk!, verificationMethodID.publicKeyJwk!)) {
 				throw new Error('The first verificationMethod key must be the same as the kid for DID Document creation operation.');
 			}
 
@@ -146,8 +148,21 @@ export class Server {
 				throw new Error(`The DID Document does not exists on this server, you must set version to 0 to create a new DID Document.`);
 			}
 
-			// TODO: REPLACE THIS WITH DATABASE RESULT
-			verificationMethod = this.getAuthenticationMethod(jws.header['kid'], jws.payload['didDocument']);
+			if (item.didDocumentMetadata.deactivated) {
+				throw new Error('The DID Document has been deactivated and cannot be updated any longer.');
+			}
+
+			if (item.didDocument == null) {
+				throw new Error('The DID Document has been deactivated and cannot be updated any longer.');
+			}
+
+			// Verify that the version is same as next version:
+			if (Number(item.didDocumentMetadata.nextVersionId) !== Number(jws.payload['version'])) {
+				throw new Error('The version of the updated DID Document must correspond to the nextVersionId of the current active DID Document.');
+			}
+
+			// Get the verification method specified in the kid from the current active document.
+			verificationMethod = this.getAuthenticationMethod(jws.header['kid'], item.didDocument);
 		}
 
 		// Validate the signature of the selected verification method used in the kid and the raw jws payload.
@@ -209,7 +224,11 @@ export class Server {
 		return result;
 	}
 
-	private validateKey(jwk: JsonWebKey) {
+	private validateKey(jwk: JsonWebKey | undefined) {
+		if (jwk == null) {
+			throw new Error('Invalid jwk. kty MUST be EC. crv MUST be secp256k1.');
+		}
+
 		if (jwk.kty !== 'EC' || jwk.crv !== 'secp256k1') {
 			throw new Error('Invalid jwk. kty MUST be EC. crv MUST be secp256k1.');
 		}
@@ -227,7 +246,7 @@ export class Server {
 
 	/** If the version is 0, we will require that the initial request is signed with a key that verifies the actual DID ID. */
 	private validateIdentifier(didDocument: DIDDocument) {
-		if (didDocument.verificationMethod.length == 0 || didDocument.verificationMethod[0] == null) {
+		if (didDocument.verificationMethod == null || didDocument.verificationMethod.length == 0 || didDocument.verificationMethod[0] == null) {
 			throw new Error('The list of verificationMethod must be 1 or more.');
 		}
 
@@ -236,7 +255,8 @@ export class Server {
 		this.validateKey(verificationMethod.publicKeyJwk);
 
 		// Verify that the public key of the verificationMethod found generates the correct DID Subject.
-		const identifier = this.tools.getIdentifierFromJsonWebKey(verificationMethod.publicKeyJwk);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const identifier = this.tools.getIdentifierFromJsonWebKey(verificationMethod.publicKeyJwk!);
 		const didId = `${BlockcoreIdentity.PREFIX}:${identifier}`;
 
 		// The derived identfier from the initial key signing the request MUST equal the DID ID.
@@ -249,10 +269,15 @@ export class Server {
 
 	/** Attempts to find the verificationMethod (key) specified in the kid among items in the "authentcation" list. */
 	private getAuthenticationMethod(kid: string, didDocument: DIDDocument): VerificationMethod {
+		if (didDocument == null) {
+			throw new Error('Verification key needed to verify request was not found in DID Document.');
+		}
+
 		let verificationMethod: VerificationMethod | undefined;
 		let keyId = '';
 
-		for (const vm of didDocument.authentication) {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		for (const vm of didDocument.authentication!) {
 			// Check if the key is a reference of full value:
 			if (typeof vm === 'string') {
 				if (kid.endsWith(vm)) {
@@ -269,7 +294,8 @@ export class Server {
 
 		// If the vm that was found is string, we need to look up in the verificationMethod list.
 		if (keyId) {
-			for (const vm of didDocument.verificationMethod) {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			for (const vm of didDocument.verificationMethod!) {
 				if (keyId.endsWith(vm.id)) {
 					verificationMethod = vm;
 					break;
