@@ -68,7 +68,7 @@ export class Server {
 		return result;
 	}
 
-	async update(did: string, document: string) {
+	async update(did: string, document: JWTDecoded) {
 		return this.config.store.put(did, document);
 	}
 
@@ -140,7 +140,8 @@ export class Server {
 		this.validateSignature(requestBody, verificationMethod);
 
 		// Store the decoded document:
-		await this.config.store.put(did, jws);
+		await this.update(did, jws);
+		// await this.config.store.put(did, jws);
 
 		// const key = this.validateVerificationMethod(jws.header['kid'], Number(jws.payload['version']), jws.payload['didDocument']);
 

@@ -33,7 +33,7 @@ export class Storage implements Store {
 		return this.db.close();
 	}
 
-	async put(id: string, document: string) {
+	async put(id: string, document: any) {
 		this.db.batch().put;
 
 		// The latest DID Document is always stored in the primary database, while history is accessible in a sublevel.
@@ -41,8 +41,6 @@ export class Storage implements Store {
 
 		// Move the existing document to the sublevel.
 		if (existingDocument) {
-			console.log('FOUND EXISTING DOCUMENT!');
-			const doc = JSON.parse(existingDocument);
 			const history = this.db.sublevel('history', { valueEncoding: 'json' });
 
 			// Perform the operation in batch to ensure either both operations fails or both succed.
@@ -50,8 +48,8 @@ export class Storage implements Store {
 				{
 					type: 'put',
 					sublevel: history,
-					key: `${id}:${doc.version}`, // This key can be derived from first getting the currently active document and do version - 1.
-					value: doc,
+					key: `${id}:${existingDocument.version}`, // This key can be derived from first getting the currently active document and do version - 1.
+					value: existingDocument,
 				},
 				// We don't need to delete existing, we will overwrite it.
 				// {
@@ -61,11 +59,10 @@ export class Storage implements Store {
 				{
 					type: 'put',
 					key: id,
-					value: JSON.parse(document),
+					value: document,
 				},
 			]);
 		} else {
-			console.log('NEW DOCUMENT, WRITING NOW!');
 			return this.db.put(id, document);
 		}
 	}
@@ -74,7 +71,7 @@ export class Storage implements Store {
 		return this.db.batch(items);
 	}
 
-	async get(id: string) {
+	async get(id: string): Promise<any> {
 		try {
 			return await this.db.get(id);
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
