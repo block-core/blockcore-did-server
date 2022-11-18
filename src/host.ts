@@ -41,25 +41,30 @@ app.use(
 );
 
 const router = new Router();
+
 router.post('/', async (ctx, _next) => {
-	console.log(ctx);
 	const response = await server.request(ctx.body);
-	console.log('RESPONSE:', response);
 	setResponse(response, ctx.response);
 });
 
 router.get('/1.0/identifiers/:did', async (ctx, _next) => {
 	// ctx.request.ip
-	const did = String(ctx.params['did']);
-	const didDocument = await server.resolve(did);
+	let version = undefined;
 
-	if (!didDocument) {
-		ctx.response.status = 404;
-		ctx.response.body = '404 Not Found';
-	} else {
-		setResponse(didDocument, ctx.response);
+	if (ctx.query['version']) {
+		version = Number(ctx.query['version']);
 	}
+
+	const did = String(ctx.params['did']);
+
+	const didDocument = await server.resolve(did, version);
+	setResponse(didDocument, ctx.response);
 });
+
+// router.get('/wipe', async (ctx, _next) => {
+// 	await server.wipe();
+// 	setResponse({ wipe: 'ok' }, ctx.response);
+// });
 
 router.get('/', async (ctx, _next) => {
 	setResponse({ online: 'true', example: '/1.0/identifiers/did:is:0f254e55a2633d468e92aa7dd5a76c0c9101fab8e282c8c20b3fefde0d68f217' }, ctx.response);

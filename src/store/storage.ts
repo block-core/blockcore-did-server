@@ -41,14 +41,15 @@ export class Storage implements Store {
 
 		// Move the existing document to the sublevel.
 		if (existingDocument) {
-			const history = this.db.sublevel('history', { valueEncoding: 'json' });
+			const history = this.db.sublevel('history', { keyEncoding: 'utf8', valueEncoding: 'json' });
+			const historyId = `${id}:${existingDocument.payload.version}`;
 
 			// Perform the operation in batch to ensure either both operations fails or both succed.
 			return this.db.batch([
 				{
 					type: 'put',
 					sublevel: history,
-					key: `${id}:${existingDocument.version}`, // This key can be derived from first getting the currently active document and do version - 1.
+					key: historyId, // This key can be derived from first getting the currently active document and do version - 1.
 					value: existingDocument,
 				},
 				// We don't need to delete existing, we will overwrite it.
@@ -71,9 +72,13 @@ export class Storage implements Store {
 		return this.db.batch(items);
 	}
 
-	async get(id: string): Promise<any> {
+	async get(id: string, sublevel?: string): Promise<any> {
 		try {
-			return await this.db.get(id);
+			if (sublevel) {
+				return await this.db.sublevel(sublevel).get(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+			} else {
+				return await this.db.get(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+			}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (err: any) {
 			if (err.code === 'LEVEL_NOT_FOUND') {
@@ -84,8 +89,12 @@ export class Storage implements Store {
 		}
 	}
 
-	async delete(did: string) {
-		return this.db.del(did);
+	async delete(did: string, sublevel?: string) {
+		if (sublevel) {
+			return this.db.sublevel(sublevel).del(did);
+		} else {
+			return this.db.del(did);
+		}
 	}
 
 	async wipe() {

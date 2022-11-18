@@ -5,8 +5,6 @@ import { Config, DIDDocument, VerificationMethod } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
 import { BlockcoreIdentityTools, BlockcoreIdentity } from '@blockcore/identity';
 
-console.log(`Starting Blockcore DID Server...`);
-
 export class Server {
 	private config: Config;
 	// private textEncoder = new TextEncoder();
@@ -29,7 +27,7 @@ export class Server {
 
 	// https://github.com/block-core/blockcore-did-resolver
 	/** This is a generic resolve method that is to be used by the Universal DID Resolver */
-	async resolve(did: string): Promise<DIDResolutionResult> {
+	async resolve(did: string, version?: number): Promise<DIDResolutionResult> {
 		if (!did.startsWith(BlockcoreIdentity.PREFIX)) {
 			return {
 				didDocument: null,
@@ -38,9 +36,16 @@ export class Server {
 			};
 		}
 
-		const jws: JWTDecoded = await this.config.store.get(did);
+		let jws: JWTDecoded;
 
-		if (!jws) {
+		if (version != null) {
+			const queryId = `${did}:${version}`;
+			jws = await this.config.store.get(queryId, 'history');
+		} else {
+			jws = await this.config.store.get(did);
+		}
+
+		if (!jws && version == null) {
 			return {
 				didDocument: null,
 				didDocumentMetadata: {
@@ -50,9 +55,18 @@ export class Server {
 			};
 		}
 
+		if (!jws && version != null) {
+			return {
+				didDocument: null,
+				didDocumentMetadata: {},
+				didResolutionMetadata: { error: 'notFound' },
+			};
+		}
+
 		const result: DIDResolutionResult = {
 			didDocument: jws.payload['didDocument'],
 			didDocumentMetadata: {
+				versionId: String(jws.payload['version']),
 				nextVersionId: String(Number(jws.payload['version']) + 1),
 				updated: String(jws.payload.iat),
 				// created: jws.payload.iat,
@@ -82,7 +96,6 @@ export class Server {
 
 		try {
 			requestBody = this.textDecoder.decode(rawRequest);
-			console.log(requestBody);
 		} catch {
 			throw new Error('Expected body to be text.');
 		}
@@ -120,7 +133,8 @@ export class Server {
 
 			item = await this.resolve(did);
 
-			if (item != null) {
+			// Make sure we receive an notFound response
+			if (item.didResolutionMetadata?.error !== 'notFound') {
 				throw new Error('The DID Document already exists. You must increase the version number. Resolve the existing DID Document to get latest version id.');
 			}
 
@@ -192,7 +206,6 @@ export class Server {
 
 	private async validateSignature(jws: string, verificationMethod: VerificationMethod) {
 		const result = await verifyJWS(jws, verificationMethod);
-		console.log(result);
 		return result;
 	}
 

@@ -8,9 +8,9 @@ export interface Store {
 
 	put(id: string, document: any): Promise<void>;
 
-	get(id: string): Promise<any | undefined>;
+	get(id: string, sublevel?: string): Promise<any | undefined>;
 
-	delete(id: string): Promise<void>;
+	delete(id: string, sublevel?: string): Promise<void>;
 
 	wipe(): Promise<void>;
 }
