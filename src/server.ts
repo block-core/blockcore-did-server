@@ -36,7 +36,7 @@ export class Server {
 			};
 		}
 
-		let jws: JWTDecoded;
+		let jws: JWTDecoded | undefined;
 
 		if (version != null) {
 			const queryId = `${did}:${version}`;
@@ -45,17 +45,7 @@ export class Server {
 			jws = await this.config.store.get(did);
 		}
 
-		if (!jws && version == null) {
-			return {
-				didDocument: null,
-				didDocumentMetadata: {
-					nextVersionId: '0',
-				},
-				didResolutionMetadata: { error: 'notFound' },
-			};
-		}
-
-		if (!jws && version != null) {
+		if (!jws) {
 			return {
 				didDocument: null,
 				didDocumentMetadata: {},
@@ -179,19 +169,6 @@ export class Server {
 
 		// Store the decoded document:
 		await this.update(did, jws);
-
-		// await this.config.store.put(did, jws);
-
-		// const key = this.validateVerificationMethod(jws.header['kid'], Number(jws.payload['version']), jws.payload['didDocument']);
-
-		// this.validateIdentifier(verificationMethod, jws.payload['didDocument']);
-
-		// // Upon initial creation, we require that the key the DID ID is derived from, must be the "kid".
-		// if (Number(jws.payload['version']) === 0) {
-		// 	this.validateIdentifier(verificationMethod, jws.payload['didDocument']);
-		// }
-
-		// this.validateSignature(requestBody);
 
 		const response = { status: 200, result: 'saved' };
 
