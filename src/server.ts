@@ -109,27 +109,36 @@ export class Server {
 		this.validateJws(jws);
 
 		const did = this.getIdFromKid(jws.header['kid']);
-
-		// The didDocument can be empty if the request is a delete one.
-		if (jws.payload['didDocument']) {
-			this.validateDidDocument(jws.payload['didDocument']);
-		}
+		const didDocument = jws.payload['didDocument'];
+		const version = jws.payload['version'];
+		const kid = jws.header['kid'];
 
 		let item: DIDResolutionResult;
-
-		// The first key in verificationMethod must ALWAYS be the key used to derive the DID ID.
-		const verificationMethodID = this.validateIdentifier(jws.payload['didDocument']);
-
+		let verificationMethodID: VerificationMethod;
 		let verificationMethod: VerificationMethod;
 
+		// The didDocument can be empty if the request is a delete one.
+		if (didDocument != null) {
+			this.validateDidDocument(didDocument);
+
+			// The first key in verificationMethod must ALWAYS be the key used to derive the DID ID.
+			// TODO: Consider simply doing a basic comparison between existing saved document and incoming document, not needing to perform too much operations.
+			verificationMethodID = this.validateIdentifier(didDocument);
+		}
+
 		// If the version is 0, we don't have an existing DID Document to resolve.
-		if (Number(jws.payload['version']) === 0) {
+		if (Number(version) === 0) {
+			// Validate again here since users can submit empty version 0 requests.
+			if (didDocument == null) {
+				throw new Error('The didDocument must be set for initial creation of a new DID Document.');
+			}
+
 			// Get the verification method specified in the kid directly from payload when creating DID Document for the first time.
-			verificationMethod = this.getAuthenticationMethod(jws.header['kid'], jws.payload['didDocument']);
+			verificationMethod = this.getAuthenticationMethod(kid, didDocument);
 
 			// Ensure that the first verificationMethod and authentication is the same upon initial create.
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			if (!this.equalKeys(verificationMethod.publicKeyJwk!, verificationMethodID.publicKeyJwk!)) {
+			if (!this.equalKeys(verificationMethod.publicKeyJwk!, verificationMethodID!.publicKeyJwk!)) {
 				throw new Error('The first verificationMethod key must be the same as the kid for DID Document creation operation.');
 			}
 
@@ -157,12 +166,12 @@ export class Server {
 			}
 
 			// Verify that the version is same as next version:
-			if (Number(item.didDocumentMetadata.nextVersionId) !== Number(jws.payload['version'])) {
+			if (Number(item.didDocumentMetadata.nextVersionId) !== Number(version)) {
 				throw new Error('The version of the updated DID Document must correspond to the nextVersionId of the current active DID Document.');
 			}
 
 			// Get the verification method specified in the kid from the current active document.
-			verificationMethod = this.getAuthenticationMethod(jws.header['kid'], item.didDocument);
+			verificationMethod = this.getAuthenticationMethod(kid, item.didDocument);
 		}
 
 		// Validate the signature of the selected verification method used in the kid and the raw jws payload.
@@ -170,6 +179,7 @@ export class Server {
 
 		// Store the decoded document:
 		await this.update(did, jws);
+
 		// await this.config.store.put(did, jws);
 
 		// const key = this.validateVerificationMethod(jws.header['kid'], Number(jws.payload['version']), jws.payload['didDocument']);

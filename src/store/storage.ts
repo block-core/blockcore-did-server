@@ -1,12 +1,13 @@
+import { JWTDecoded } from 'did-jwt/lib/JWT.js';
 import { Level } from 'level';
-import { Store } from '../interfaces/index.js';
+import { DIDDocumentStore } from '../interfaces/index.js';
 import { sleep } from '../utils.js';
 
-export class Storage implements Store {
-	db: Level<string, string>;
+export class Storage implements DIDDocumentStore {
+	db: Level<string, JWTDecoded>;
 
 	constructor(location = './blockcore-did-server') {
-		this.db = new Level<string, any>(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
+		this.db = new Level<string, JWTDecoded>(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
 	}
 
 	async open() {
@@ -33,7 +34,7 @@ export class Storage implements Store {
 		return this.db.close();
 	}
 
-	async put(id: string, document: any) {
+	async put(id: string, document: JWTDecoded) {
 		this.db.batch().put;
 
 		// The latest DID Document is always stored in the primary database, while history is accessible in a sublevel.
@@ -89,6 +90,7 @@ export class Storage implements Store {
 		}
 	}
 
+	/** This is to be used by server administrators. */
 	async delete(did: string, sublevel?: string) {
 		if (sublevel) {
 			return this.db.sublevel(sublevel).del(did);

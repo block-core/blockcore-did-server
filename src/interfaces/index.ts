@@ -1,12 +1,14 @@
-// Primarily done to improve testability.
-export interface Store {
+import { JWTDecoded } from 'did-jwt/lib/JWT';
+
+/** DID Document Store that have specific logic in operations related to DID operations. */
+export interface DIDDocumentStore {
 	open(): Promise<void>;
 
 	close(): Promise<void>;
 
-	put(id: string, document: any): Promise<void>;
+	put(id: string, document: JWTDecoded): Promise<void>;
 
-	get(id: string, sublevel?: string): Promise<any | undefined>;
+	get(id: string, sublevel?: string): Promise<JWTDecoded | undefined>;
 
 	delete(id: string, sublevel?: string): Promise<void>;
 
@@ -14,7 +16,7 @@ export interface Store {
 }
 
 export interface Config {
-	store: Store;
+	store: DIDDocumentStore;
 }
 
 // export interface DIDDocument {
