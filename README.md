@@ -66,7 +66,7 @@ Version 1 or higher indicates that this is an updated DID Document and other rul
 
 ### "content"
 
-This is the DID Document. Can be empty, which means the user want to delete the DID Document. If a delete is performed the DID Document can never be restored again.
+This is the DID Document. Can be empty (null), which means the user want to delete the DID Document. If a delete is performed the DID Document can never be restored again (unless manually performed by server administrator).
 
 #### Version 0 rules
 
@@ -80,10 +80,16 @@ The version must be +1 from the current synced document.
 
 The server hosts a generic endpoint at the root that can receive the JWS as a raw binary object through a POST method.
 
+All operations are the same, they differ in "version" and "didDocument" provided (and "kid" and "iat").
+
+To delete an DID Document, provide a signed JWS with correct version and an empty (null) value for the didDocument. This will wipe the entire history of updates that exists for that DID Document and it will return "deactivated": true for the didResolutionMetadata.
+
+A delete DID Document cannot be restored and will forever be marked as deleted.
+
 ## Request to be forgotten
 
 There will in the future be a separate API that anyone can use to request a complete history wipe of their DID Document history. This API will allow users to provide an encrypted personal message for the DID Server host (public key discoverable using the .well-known configuration).
 
-## Manual Delete
+## Manual Restore
 
-The host of the DID Server can always manually delete (and block further sync, added to deny-list) entries in their databases. If access to keys are lost, a user can send a manual request to the service provider and ask to be deleted (wiped) from the database.
+The host of the DID Server can always manually restore entries in their databases. If a delete happened by mistake, a user can send a manual request to the service provider and ask to be restored from the database. This won't be able to restore the history, but the administrator can delete the last delete update and allow creation of the DID Document as a fresh entry.
