@@ -53,14 +53,23 @@ export class Server {
 			};
 		}
 
+		const didDocument = jws.payload['didDocument'];
+		const existingVersion = Number(jws.payload['version']);
+		let nextVersionId: string | undefined = String(existingVersion + 1);
+
+		// Do not return nextVersionId for deleted DID Documents.
+		if (didDocument == null) {
+			nextVersionId = undefined;
+		}
+
 		const result: DIDResolutionResult = {
-			didDocument: jws.payload['didDocument'],
+			didDocument: didDocument,
 			didDocumentMetadata: {
-				versionId: String(jws.payload['version']),
-				nextVersionId: String(Number(jws.payload['version']) + 1),
+				versionId: String(existingVersion),
+				nextVersionId: nextVersionId,
 				updated: String(jws.payload.iat),
 				// created: jws.payload.iat,
-				deactivated: false,
+				deactivated: didDocument == null,
 				proof: `${jws.data}.${jws.signature}`,
 			},
 			didResolutionMetadata: {
