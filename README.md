@@ -34,6 +34,26 @@ The API for the DID Server is not very complex, they are based around JSON Web T
 
 The data on a single instance of the Blockcore DID Server, can sync with other instances very easily. When a sync happens, the same requests that a normal user performs, is re-run on the other server and same verification happens as when the user originally made the request. This ensures that zero trust is needed between instances of DID Servers.
 
+**Suggested sync model**
+
+Server1 connects to Server2 simply using REST-APIs, no need for specialized protocols.
+
+Server1 performs a date-based query based on local sync-state between Server1 and Server 2.
+
+If this is an initial sync, Server1 is likely empty and will get list of all DID IDs that exists on the other server.
+
+All the API calls are based upon paging.
+
+If the page returns 50 items, the Server1 will retrieve the complete history of DID 1, DID 2, DID 3 in that paging result, before moving on to the next page.
+
+We record the start time of the sync. When the full sync is completed, we need to do another sync not too long after to get the latest that happened while downloading the full sync.
+
+After finishing, the next time Server1 query Server2, it will include "from-date" that was last sync start time.
+
+This means that each server must keep an index and cursor that can be used to travese based upon last inserted date (on the server, not part of the JWS itself).
+
+Is that enough?
+
 ## API Schema
 
 APIs calls are based upon JWS that MUST correspond to the following specifications. All the fields in the example below must be provided and is required, except the "rules" field which can be omitted.
