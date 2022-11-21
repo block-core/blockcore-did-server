@@ -48,6 +48,11 @@ router.post('/', async (ctx, _next) => {
 	setResponse(response, ctx.response);
 });
 
+router.get('/1.0/identifiers/log', async (ctx, _next) => {
+	const items = await server.list(new Date(2019, 1, 1));
+	setResponse(items, ctx.response);
+});
+
 router.get('/1.0/identifiers/:did', async (ctx, _next) => {
 	// ctx.request.ip
 	let version = undefined;
@@ -86,9 +91,9 @@ const syncFunction = async () => {
 
 	await sync.run();
 
-	setTimeout(() => {
-		syncFunction();
-	}, 10000);
+	// setTimeout(() => {
+	// 	syncFunction();
+	// }, 10000);
 };
 
 try {

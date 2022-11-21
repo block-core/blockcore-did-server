@@ -25,6 +25,23 @@ export class Server {
 		return this.config.store.close();
 	}
 
+	async list(date: Date) {
+		const db = this.config.store.database();
+
+		const iterator = db.sublevel('update').iterator<string, any>({ gt: date.toISOString(), limit: 100, keyEncoding: 'utf8', valueEncoding: 'json' });
+		const dids: any[] = [];
+
+		for await (const [key, value] of iterator) {
+			dids.push({
+				date: key,
+				did: value.did,
+				version: value.version,
+			});
+		}
+
+		return dids;
+	}
+
 	// https://github.com/block-core/blockcore-did-resolver
 	/** This is a generic resolve method that is to be used by the Universal DID Resolver */
 	async resolve(did: string, version?: number): Promise<DIDResolutionResult> {
@@ -175,6 +192,10 @@ export class Server {
 
 		// Validate the signature of the selected verification method used in the kid and the raw jws payload.
 		this.validateSignature(requestBody, verificationMethod);
+
+		console.log('DATA BEFORE UPDATE:');
+		console.log(did);
+		console.log(JSON.stringify(jws));
 
 		// Store the decoded document:
 		await this.update(did, jws);

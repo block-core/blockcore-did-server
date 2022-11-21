@@ -1,4 +1,5 @@
 import { JWTDecoded } from 'did-jwt/lib/JWT';
+import { Level } from 'level';
 
 /** DID Document Store that have specific logic in operations related to DID operations. */
 export interface DIDDocumentStore {
@@ -12,7 +13,19 @@ export interface DIDDocumentStore {
 
 	delete(id: string, sublevel?: string): Promise<void>;
 
+	database(): Level<string, DocumentEntry>;
+
 	wipe(): Promise<void>;
+}
+
+export interface DocumentEntry {
+	date: Date;
+	jws: JWTDecoded;
+}
+
+export interface DocumentUpdate {
+	did: string;
+	version: number;
 }
 
 export interface Config {

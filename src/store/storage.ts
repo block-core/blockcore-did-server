@@ -1,13 +1,13 @@
 import { JWTDecoded } from 'did-jwt/lib/JWT.js';
 import { Level } from 'level';
-import { DIDDocumentStore } from '../interfaces/index.js';
+import { DIDDocumentStore, DocumentEntry, DocumentUpdate } from '../interfaces/index.js';
 import { sleep } from '../utils.js';
 
 export class Storage implements DIDDocumentStore {
-	db: Level<string, JWTDecoded>;
+	db: Level<string, DocumentEntry | any>;
 
 	constructor(location = './blockcore-did-server') {
-		this.db = new Level<string, JWTDecoded>(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
+		this.db = new Level<string, DocumentEntry | any>(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
 	}
 
 	async open() {
@@ -35,15 +35,24 @@ export class Storage implements DIDDocumentStore {
 	}
 
 	async put(id: string, document: JWTDecoded) {
-		this.db.batch().put;
-
 		// The latest DID Document is always stored in the primary database, while history is accessible in a sublevel.
 		const existingDocument = await this.get(id);
+
+		const update = this.db.sublevel('update', { keyEncoding: 'utf8', valueEncoding: 'json' });
+
+		const entry = { date: new Date(), jws: document };
+
+		const updateDate = new Date().toISOString();
+
+		const updateDoc: DocumentUpdate = {
+			did: id,
+			version: Number(document.payload['version']),
+		};
 
 		// Move the existing document to the sublevel.
 		if (existingDocument) {
 			const history = this.db.sublevel('history', { keyEncoding: 'utf8', valueEncoding: 'json' });
-			const historyId = `${id}:${existingDocument.payload.version}`;
+			const historyId = `${id}:${existingDocument.payload['version']}`;
 
 			// Perform the operation in batch to ensure either both operations fails or both succed.
 			return this.db.batch([
@@ -61,24 +70,47 @@ export class Storage implements DIDDocumentStore {
 				{
 					type: 'put',
 					key: id,
-					value: document,
+					value: entry,
+				},
+				{
+					type: 'put',
+					sublevel: update,
+					key: updateDate,
+					value: updateDoc,
 				},
 			]);
 		} else {
-			return this.db.put(id, document);
+			// Perform the operation in batch to ensure either both operations fails or both succed.
+			return this.db.batch([
+				{
+					type: 'put',
+					key: id,
+					value: entry,
+				},
+				{
+					type: 'put',
+					sublevel: update,
+					key: updateDate,
+					value: updateDoc,
+				},
+			]);
+
+			// return this.db.put(id, entry);
 		}
 	}
 
-	async batch(items: any[]) {
-		return this.db.batch(items);
-	}
+	// async batch(items: any[]) {
+	// 	return this.db.batch(items);
+	// }
 
-	async get(id: string, sublevel?: string): Promise<any> {
+	async get(id: string, sublevel?: string): Promise<JWTDecoded | undefined> {
 		try {
 			if (sublevel) {
-				return await this.db.sublevel(sublevel).get(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+				const entry = await this.db.sublevel(sublevel).get<string, DocumentEntry>(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+				return entry.jws;
 			} else {
-				return await this.db.get(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+				const entry = await this.db.get(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+				return entry.jws;
 			}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (err: any) {
@@ -105,5 +137,9 @@ export class Storage implements DIDDocumentStore {
 			console.log('Data:', value);
 			await this.db.del(key);
 		}
+	}
+
+	database(): Level<string, DocumentEntry> {
+		return this.db;
 	}
 }
