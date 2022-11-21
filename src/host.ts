@@ -8,6 +8,7 @@ import getRawBody from 'raw-body';
 import Router from 'koa-router';
 import { Server } from './server';
 import { RateLimit } from 'koa2-ratelimit';
+import { SyncProcess } from './sync';
 
 const server = new Server();
 const app = new Koa();
@@ -76,11 +77,30 @@ app.use((ctx, _next) => {
 	ctx.response.status = 400;
 });
 
+let sync: SyncProcess;
+
+const syncFunction = async () => {
+	if (sync == null) {
+		sync = new SyncProcess(server, process.env['SERVERS']);
+	}
+
+	await sync.run();
+
+	setTimeout(() => {
+		syncFunction();
+	}, 10000);
+};
+
 try {
 	const port = 4250;
+
+	// Run the HTTP server that responds to queries.
 	app.listen(port, () => {
 		console.log(`Hosting Blockcore DID Server @ http://localhost:${port}`);
 	});
+
+	// Run the SYNC service that ensures data is synced cross server instances.
+	syncFunction();
 } catch (error) {
 	const serializedError = JSON.stringify(error, Object.getOwnPropertyNames(error));
 	console.log(`Blockcore DID Server initialization failed with error ${serializedError}`);
