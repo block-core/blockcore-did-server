@@ -56,6 +56,15 @@ router.post('/', async (ctx, _next) => {
 	}
 });
 
+router.get('/.well-known/did-configuration.json', async (ctx, _next) => {
+	const configuration = {
+		'@context': 'https://identity.foundation/.well-known/did-configuration/v1',
+		linked_dids: [process.env['VC']],
+	};
+
+	setResponse(configuration, ctx.response);
+});
+
 router.get('/1.0/log/:sequence', async (ctx, _next) => {
 	try {
 		const sequence = Number(ctx.params['sequence']);
@@ -90,7 +99,7 @@ router.get('/1.0/identifiers/:did', async (ctx, _next) => {
 // });
 
 router.get('/', async (ctx, _next) => {
-	setResponse({ online: 'true', example: '/1.0/identifiers/did:is:0f254e55a2633d468e92aa7dd5a76c0c9101fab8e282c8c20b3fefde0d68f217' }, ctx.response);
+	setResponse({ online: 'true', wellKnown: '/.well-known/did-configuration.json', example: '/1.0/identifiers/did:is:0f254e55a2633d468e92aa7dd5a76c0c9101fab8e282c8c20b3fefde0d68f217' }, ctx.response);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
@@ -106,11 +115,15 @@ const syncFunction = async () => {
 		sync = new SyncProcess(server, process.env['SERVERS']);
 	}
 
-	await sync.run();
+	try {
+		await sync.run();
+	} catch (err: any) {
+		console.error(`Failure during sync: ${err.message}`);
+	}
 
-	// setTimeout(() => {
-	// 	syncFunction();
-	// }, 10000);
+	setTimeout(() => {
+		syncFunction();
+	}, 60000);
 };
 
 try {
