@@ -4,14 +4,14 @@ export class SyncProcess {
 	servers?: string[];
 
 	constructor(private server: Server, servers: string | undefined) {
-		this.servers = servers?.split(';').filter((i) => i);
+		this.servers = servers?.split(';').filter((i) => i.trim());
 		console.log('DID Servers:', this.servers);
 	}
 
 	async run() {
 		console.log(`${new Date()}: Running Sync Process...`);
 
-		if (!this.servers) {
+		if (!this.servers || this.servers.length == 0) {
 			console.log('No servers configured for sync.');
 			return;
 		}
