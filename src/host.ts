@@ -46,28 +46,40 @@ app.use(
 const router = new Router();
 
 router.post('/', async (ctx, _next) => {
-	const response = await server.request(ctx.body);
-	setResponse(response, ctx.response);
+	try {
+		const response = await server.request(ctx.body);
+		setResponse(response, ctx.response);
+	} catch (err: any) {
+		setResponse({ error: err.message, status: 500 }, ctx.response);
+	}
 });
 
 router.get('/1.0/log/:sequence', async (ctx, _next) => {
-	const sequence = Number(ctx.params['sequence']);
-	const items = await server.list(sequence);
-	setResponse(items, ctx.response);
+	try {
+		const sequence = Number(ctx.params['sequence']);
+		const items = await server.list(sequence);
+		setResponse(items, ctx.response);
+	} catch (err: any) {
+		setResponse({ error: err.message, status: 500 }, ctx.response);
+	}
 });
 
 router.get('/1.0/identifiers/:did', async (ctx, _next) => {
-	// ctx.request.ip
-	let version = undefined;
+	try {
+		// ctx.request.ip
+		let version = undefined;
 
-	if (ctx.query['version']) {
-		version = Number(ctx.query['version']);
+		if (ctx.query['version']) {
+			version = Number(ctx.query['version']);
+		}
+
+		const did = String(ctx.params['did']);
+
+		const didDocument = await server.resolve(did, version);
+		setResponse(didDocument, ctx.response);
+	} catch (err: any) {
+		setResponse({ error: err.message, status: 500 }, ctx.response);
 	}
-
-	const did = String(ctx.params['did']);
-
-	const didDocument = await server.resolve(did, version);
-	setResponse(didDocument, ctx.response);
 });
 
 // router.get('/wipe', async (ctx, _next) => {
