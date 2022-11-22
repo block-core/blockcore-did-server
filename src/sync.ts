@@ -47,8 +47,6 @@ export class SyncProcess {
 
 				const doc = await this.server.resolve(did, version);
 
-				console.log('DOC:', doc);
-
 				if (doc.didResolutionMetadata.error === 'notFound') {
 					const fetchUrl = `${server}/1.0/identifiers/${did}?version=${version}`;
 
@@ -65,7 +63,7 @@ export class SyncProcess {
 					const content = await rawResponse2.json();
 
 					if (content) {
-						const jws = content.didDocumentMetadata.proof;
+						const jws = content.didDocumentMetadata.proof.jwt;
 						await this.server.request(jws);
 					}
 				}
@@ -75,10 +73,6 @@ export class SyncProcess {
 			}
 
 			console.log('Last sequence: ', sequence);
-			// console.log(content);
-
-			const didDocument = await this.server.resolve('did');
-			console.log(didDocument);
 		}
 	}
 }

@@ -91,7 +91,10 @@ export class Server {
 				updated: String(doc.jws.payload.iat),
 				// created: jws.payload.iat,
 				deactivated: didDocument == null,
-				proof: `${doc.jws.data}.${doc.jws.signature}`,
+				proof: {
+					type: 'JwtProof2020',
+					jwt: `${doc.jws.data}.${doc.jws.signature}`,
+				},
 			},
 			didResolutionMetadata: {
 				contentType: 'application/did+json',
