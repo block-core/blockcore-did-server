@@ -3,15 +3,15 @@ import { createJWS, createJWT, decodeJWT, ES256KSigner } from 'did-jwt';
 import { Server } from '../src/server.js';
 
 test('Create the server', async (t) => {
-	// const server = new Server();
-	// t.assert(server != null);
+	const server = new Server();
+	t.assert(server != null);
 
-	// await server.start();
+	await server.start();
 
-	// await server.wipe();
+	await server.wipe();
 
-	// let didResolution = await server.resolve('did:is:test');
-	// t.assert(didResolution === undefined);
+	const didResolution = await server.resolve('did:is:test');
+	t.assert(didResolution.didResolutionMetadata.error === 'notFound');
 
 	// const didDocument = {
 	// 	services: ['link'],
@@ -27,5 +27,3 @@ test('Create the server', async (t) => {
 	// didResolution = await server.resolve('did:is:test');
 	// console.log(didResolution);
 });
-
-test('Generate DID Document', async (t) => {});
