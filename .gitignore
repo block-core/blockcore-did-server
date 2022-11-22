@@ -3,4 +3,5 @@ dist
 lib
 blockcore-did-server
 blockcore-did-database
+blockcore-did-database2
 .env

@@ -15,6 +15,7 @@
 		"lint": "eslint .",
 		"test": "npm run lint && ava",
 		"start": "npm run build && node --es-module-specifier-resolution=node dist/host.js",
+		"start2": "set DATABASE=blockcore-did-database2 && set PORT=4251 && set SERVERS= && node --es-module-specifier-resolution=node dist/host.js",
 		"version": "node -p \"require('./package.json').version\"",
 		"changelog": "conventional-changelog -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md"
 	},

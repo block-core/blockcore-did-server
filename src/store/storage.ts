@@ -7,7 +7,7 @@ export class Storage implements DIDDocumentStore {
 	db: Level<string | number, DocumentEntry | any>;
 	sequence = 0;
 
-	constructor(location = './blockcore-did-database') {
+	constructor(location: string) {
 		this.db = new Level<string | number, DocumentEntry | any>(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
 	}
 

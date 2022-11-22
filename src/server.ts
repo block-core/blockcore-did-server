@@ -12,9 +12,9 @@ export class Server {
 	private textDecoder = new TextDecoder();
 	private tools = new BlockcoreIdentityTools();
 
-	constructor() {
+	constructor(location = './blockcore-did-database') {
 		this.config = {
-			store: new Storage(),
+			store: new Storage(location),
 		};
 	}
 
@@ -110,14 +110,18 @@ export class Server {
 		return this.config.store.wipe();
 	}
 
-	async request(rawRequest: Uint8Array) {
+	async request(rawRequest: Uint8Array | string) {
 		let requestBody;
 		let jws;
 
-		try {
-			requestBody = this.textDecoder.decode(rawRequest);
-		} catch {
-			throw new Error('Expected body to be text.');
+		if (typeof rawRequest === 'string') {
+			requestBody = rawRequest;
+		} else {
+			try {
+				requestBody = this.textDecoder.decode(rawRequest);
+			} catch {
+				throw new Error('Expected body to be text.');
+			}
 		}
 
 		try {

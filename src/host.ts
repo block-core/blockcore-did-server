@@ -10,12 +10,14 @@ import { Server } from './server';
 import { RateLimit } from 'koa2-ratelimit';
 import { SyncProcess } from './sync';
 
-const server = new Server();
+const database = process.env['DATABASE'];
+const server = new Server(database);
 await server.start();
 
 const app = new Koa();
 
 const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 30;
+const port = process.env['PORT'] ? Number(process.env['PORT']) : 4250;
 console.log(`RATE LIMIT: ${rateLimit} rpm`);
 
 app.use(cors());
@@ -112,8 +114,6 @@ const syncFunction = async () => {
 };
 
 try {
-	const port = 4250;
-
 	// Run the HTTP server that responds to queries.
 	app.listen(port, () => {
 		console.log(`Hosting Blockcore DID Server @ http://localhost:${port}`);
