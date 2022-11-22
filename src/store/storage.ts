@@ -1,13 +1,14 @@
-import { JWTDecoded } from 'did-jwt/lib/JWT.js';
 import { Level } from 'level';
 import { DIDDocumentStore, DocumentEntry, DocumentUpdate } from '../interfaces/index.js';
 import { sleep } from '../utils.js';
+import * as lexint from 'lexicographic-integer-encoding';
 
 export class Storage implements DIDDocumentStore {
-	db: Level<string, DocumentEntry | any>;
+	db: Level<string | number, DocumentEntry | any>;
+	sequence = 0;
 
-	constructor(location = './blockcore-did-server') {
-		this.db = new Level<string, DocumentEntry | any>(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
+	constructor(location = './blockcore-did-database') {
+		this.db = new Level<string | number, DocumentEntry | any>(location, { keyEncoding: 'utf8', valueEncoding: 'json' });
 	}
 
 	async open() {
@@ -34,25 +35,39 @@ export class Storage implements DIDDocumentStore {
 		return this.db.close();
 	}
 
-	async put(id: string, document: JWTDecoded) {
+	async initialize() {
+		const lastItem = await this.db
+			.sublevel('update')
+			.keys({ reverse: true, limit: 1, keyEncoding: lexint.default('hex') })
+			.all();
+
+		if (lastItem != null && lastItem.length > 0) {
+			this.sequence = Number(lastItem[0]);
+		} else {
+			this.sequence = 0;
+		}
+
+		console.log('Current sequence: ', this.sequence);
+	}
+
+	async put(id: string, document: DocumentEntry) {
 		// The latest DID Document is always stored in the primary database, while history is accessible in a sublevel.
 		const existingDocument = await this.get(id);
 
-		const update = this.db.sublevel('update', { keyEncoding: 'utf8', valueEncoding: 'json' });
-
-		const entry = { date: new Date(), jws: document };
-
-		const updateDate = new Date().toISOString();
+		const update = this.db.sublevel<string, DocumentUpdate>('update', { keyEncoding: lexint.default('hex'), valueEncoding: 'json' });
 
 		const updateDoc: DocumentUpdate = {
 			did: id,
-			version: Number(document.payload['version']),
+			version: Number(document.jws.payload['version']),
 		};
+
+		this.sequence += 1;
+		const seq = this.sequence;
 
 		// Move the existing document to the sublevel.
 		if (existingDocument) {
 			const history = this.db.sublevel('history', { keyEncoding: 'utf8', valueEncoding: 'json' });
-			const historyId = `${id}:${existingDocument.payload['version']}`;
+			const historyId = `${id}:${existingDocument.jws.payload['version']}`;
 
 			// Perform the operation in batch to ensure either both operations fails or both succed.
 			return this.db.batch([
@@ -62,20 +77,15 @@ export class Storage implements DIDDocumentStore {
 					key: historyId, // This key can be derived from first getting the currently active document and do version - 1.
 					value: existingDocument,
 				},
-				// We don't need to delete existing, we will overwrite it.
-				// {
-				// 	type: 'del',
-				// 	key: id,
-				// },
 				{
 					type: 'put',
 					key: id,
-					value: entry,
+					value: document,
 				},
 				{
 					type: 'put',
 					sublevel: update,
-					key: updateDate,
+					key: seq,
 					value: updateDoc,
 				},
 			]);
@@ -85,32 +95,26 @@ export class Storage implements DIDDocumentStore {
 				{
 					type: 'put',
 					key: id,
-					value: entry,
+					value: document,
 				},
 				{
 					type: 'put',
 					sublevel: update,
-					key: updateDate,
+					key: seq,
 					value: updateDoc,
 				},
 			]);
-
-			// return this.db.put(id, entry);
 		}
 	}
 
-	// async batch(items: any[]) {
-	// 	return this.db.batch(items);
-	// }
-
-	async get(id: string, sublevel?: string): Promise<JWTDecoded | undefined> {
+	async get(id: string, sublevel?: string): Promise<DocumentEntry | undefined> {
 		try {
 			if (sublevel) {
 				const entry = await this.db.sublevel(sublevel).get<string, DocumentEntry>(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
-				return entry.jws;
+				return entry;
 			} else {
-				const entry = await this.db.get(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
-				return entry.jws;
+				const entry = await this.db.get<string, DocumentEntry>(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+				return entry;
 			}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (err: any) {
@@ -139,7 +143,7 @@ export class Storage implements DIDDocumentStore {
 		}
 	}
 
-	database(): Level<string, DocumentEntry> {
+	database(): Level<string | number, DocumentEntry> {
 		return this.db;
 	}
 }

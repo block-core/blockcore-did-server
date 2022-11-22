@@ -2,4 +2,5 @@ node_modules
 dist
 lib
 blockcore-did-server
+blockcore-did-database
 .env

@@ -7,15 +7,17 @@ export interface DIDDocumentStore {
 
 	close(): Promise<void>;
 
-	put(id: string, document: JWTDecoded): Promise<void>;
+	put(id: string, document: DocumentEntry): Promise<void>;
 
-	get(id: string, sublevel?: string): Promise<JWTDecoded | undefined>;
+	get(id: string, sublevel?: string): Promise<DocumentEntry | undefined>;
 
 	delete(id: string, sublevel?: string): Promise<void>;
 
-	database(): Level<string, DocumentEntry>;
+	database(): Level<string | number, DocumentEntry>;
 
 	wipe(): Promise<void>;
+
+	initialize(): Promise<void>;
 }
 
 export interface DocumentEntry {

@@ -1,9 +1,10 @@
 import { decodeJWT, verifyJWS } from 'did-jwt';
 import { JWTDecoded } from 'did-jwt/lib/JWT.js';
 import { JsonWebKey, DIDResolutionResult, DIDDocument, VerificationMethod } from 'did-resolver';
-import { Config } from './interfaces/index.js';
+import { Config, DocumentEntry } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
 import { BlockcoreIdentityTools, BlockcoreIdentity } from '@blockcore/identity';
+import * as lexint from 'lexicographic-integer-encoding';
 
 export class Server {
 	private config: Config;
@@ -18,24 +19,27 @@ export class Server {
 	}
 
 	async start() {
-		return this.config.store.open();
+		console.log('Starting Server...');
+
+		await this.config.store.open();
+
+		return this.config.store.initialize();
 	}
 
 	async stop() {
 		return this.config.store.close();
 	}
 
-	async list(date: Date) {
+	async list(sequence: number) {
 		const db = this.config.store.database();
-
-		const iterator = db.sublevel('update').iterator<string, any>({ gt: date.toISOString(), limit: 100, keyEncoding: 'utf8', valueEncoding: 'json' });
+		const iterator = db.sublevel('update').iterator<string, any>({ gt: sequence.toString(), limit: 5, keyEncoding: lexint.default('hex'), valueEncoding: 'json' });
 		const dids: any[] = [];
 
 		for await (const [key, value] of iterator) {
 			dids.push({
-				date: key,
+				seq: key,
 				did: value.did,
-				version: value.version,
+				ver: value.version,
 			});
 		}
 
@@ -53,16 +57,16 @@ export class Server {
 			};
 		}
 
-		let jws: JWTDecoded | undefined;
+		let doc: DocumentEntry | undefined;
 
 		if (version != null) {
 			const queryId = `${did}:${version}`;
-			jws = await this.config.store.get(queryId, 'history');
+			doc = await this.config.store.get(queryId, 'history');
 		} else {
-			jws = await this.config.store.get(did);
+			doc = await this.config.store.get(did);
 		}
 
-		if (!jws) {
+		if (!doc) {
 			return {
 				didDocument: null,
 				didDocumentMetadata: {},
@@ -70,8 +74,8 @@ export class Server {
 			};
 		}
 
-		const didDocument = jws.payload['didDocument'];
-		const existingVersion = Number(jws.payload['version']);
+		const didDocument = doc.jws.payload['didDocument'];
+		const existingVersion = Number(doc.jws.payload['version']);
 		let nextVersionId: string | undefined = String(existingVersion + 1);
 
 		// Do not return nextVersionId for deleted DID Documents.
@@ -84,10 +88,10 @@ export class Server {
 			didDocumentMetadata: {
 				versionId: String(existingVersion),
 				nextVersionId: nextVersionId,
-				updated: String(jws.payload.iat),
+				updated: String(doc.jws.payload.iat),
 				// created: jws.payload.iat,
 				deactivated: didDocument == null,
-				proof: `${jws.data}.${jws.signature}`,
+				proof: `${doc.jws.data}.${doc.jws.signature}`,
 			},
 			didResolutionMetadata: {
 				contentType: 'application/did+json',
@@ -98,7 +102,7 @@ export class Server {
 		return result;
 	}
 
-	async update(did: string, document: JWTDecoded) {
+	async update(did: string, document: DocumentEntry) {
 		return this.config.store.put(did, document);
 	}
 
@@ -193,12 +197,8 @@ export class Server {
 		// Validate the signature of the selected verification method used in the kid and the raw jws payload.
 		this.validateSignature(requestBody, verificationMethod);
 
-		console.log('DATA BEFORE UPDATE:');
-		console.log(did);
-		console.log(JSON.stringify(jws));
-
 		// Store the decoded document:
-		await this.update(did, jws);
+		await this.update(did, { date: new Date(), jws: jws });
 
 		const response = { status: 200, result: 'saved' };
 

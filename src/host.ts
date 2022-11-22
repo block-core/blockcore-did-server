@@ -11,9 +11,11 @@ import { RateLimit } from 'koa2-ratelimit';
 import { SyncProcess } from './sync';
 
 const server = new Server();
+await server.start();
+
 const app = new Koa();
 
-const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 5;
+const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 30;
 console.log(`RATE LIMIT: ${rateLimit} rpm`);
 
 app.use(cors());
@@ -48,8 +50,9 @@ router.post('/', async (ctx, _next) => {
 	setResponse(response, ctx.response);
 });
 
-router.get('/1.0/identifiers/log', async (ctx, _next) => {
-	const items = await server.list(new Date(2019, 1, 1));
+router.get('/1.0/log/:sequence', async (ctx, _next) => {
+	const sequence = Number(ctx.params['sequence']);
+	const items = await server.list(sequence);
 	setResponse(items, ctx.response);
 });
 
