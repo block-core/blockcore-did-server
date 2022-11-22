@@ -1,11 +1,12 @@
 {
 	"name": "@blockcore/did-server",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "DID Server implementation that supports public sync and sharing",
 	"main": "dist/host.js",
 	"type": "module",
 	"files": [
-		"dist/**/*"
+		"dist/**/*",
+		".env.sample"
 	],
 	"engines": {
 		"node": ">=18.*"
