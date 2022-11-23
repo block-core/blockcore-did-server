@@ -54,7 +54,7 @@ jobs:
       run: ls -R
 
     - name: Build the Docker container image
-      run: docker build -f "Dockerfile" -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.release.tag_name }} --build-arg VERSION=${{ github.event.release.tag_name }} "."
+      run: docker build -f "Dockerfile" -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.inputs.release_version }} --build-arg VERSION=${{ github.event.inputs.release_version }} "."
 
     - if: github.event.inputs.publish_artifacts == 'true'
       name: Login and Push to Docker Registry
