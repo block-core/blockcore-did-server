@@ -42,16 +42,12 @@ jobs:
         url: ${{ github.event.inputs.assets_url }}
         folder: "./artifacts/"
 
-    # This will extract the .zip on root and re-create same structure as normal dev build,
-    # so the same Dockerfile can be used for local debug/build and for the pipeline.
-    - name: Extract asset
-      run: tar -C ./build -xzvf ./artifacts/blockcore-did-server-${{ github.event.inputs.release_version }}.tgz --strip-components=1
-
-    - name: Display structure of downloaded files
-      run: ls -R
-
-    - name: Copy the dockerfile into artifacts.
-      run: copy dockerfile ./build/
+    - name: Extract asset and copy
+      run: |
+        mkdir ./build/
+        tar -C ./build -xzvf ./artifacts/blockcore-did-server-${{ github.event.inputs.release_version }}.tgz --strip-components=1
+        ls -R
+        copy dockerfile ./build/
 
     - name: Build the Docker container image
       run: docker build -f "./build/dockerfile" -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.inputs.release_version }} --build-arg VERSION=${{ github.event.inputs.release_version }} "."
