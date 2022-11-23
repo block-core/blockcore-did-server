@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
 ENV NODE_ENV production
 
 WORKDIR /host
-COPY --chown=node:node . /host
+COPY --chown=node:node ./app /host
 RUN npm ci --omit=dev
 
 USER node
