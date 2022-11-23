@@ -36,7 +36,7 @@ jobs:
         ls -R
 
     - name: Build the Docker container image
-      run: docker build -f "./dockerfile" -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.release.tag_name }}
+      run: docker build . -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.release.tag_name }}
 
     - name: Login and Push to Docker Registry
       run: |
