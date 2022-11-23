@@ -107,3 +107,12 @@ There will in the future be a separate API that anyone can use to request a comp
 ## Manual Delete
 
 The host of the DID Server can always manually delete (and block further sync, added to deny-list) entries in their databases. If access to keys are lost, a user can send a manual request to the service provider and ask to be deleted (wiped) from the database.
+
+## Docker
+
+Some of our decisions for `dockerfile` is based of best-practices from here: https://snyk.io/blog/10-best-practices-to-containerize-nodejs-web-applications-with-docker/
+
+```sh
+# Debug the container if needed during development:
+docker run -it blockcore/blockcore-did-server sh
+```

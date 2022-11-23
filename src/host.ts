@@ -11,10 +11,18 @@ import { RateLimit } from 'koa2-ratelimit';
 import { SyncProcess } from './sync';
 
 const database = process.env['DATABASE'];
+const app = new Koa();
 const server = new Server(database);
 await server.start();
 
-const app = new Koa();
+async function shutdown(signal: any) {
+	console.log(`*^!@4=> Received signal to terminate: ${signal}`);
+	await server.stop();
+	process.kill(process.pid, signal);
+}
+
+process.once('SIGINT', shutdown);
+process.once('SIGTERM', shutdown);
 
 const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 30;
 const port = process.env['PORT'] ? Number(process.env['PORT']) : 4250;
