@@ -12,6 +12,12 @@ export class Server {
 	private textDecoder = new TextDecoder();
 	private tools = new BlockcoreIdentityTools();
 
+	/** Value that controls how many keys pr. section is allowed. */
+	private maxKeyItems = 10;
+
+	/** Value that controls how many services pr. document is allowed. */
+	private maxServiceItems = 10;
+
 	constructor(location = './blockcore-did-database') {
 		this.config = {
 			store: new Storage(location),
@@ -265,6 +271,38 @@ export class Server {
 
 		if (!didDocument.authentication || didDocument.authentication.length < 1) {
 			throw new Error('The didDocument.authentication must be set and contain minimum one entry.');
+		}
+
+		if (didDocument.authentication.length > this.maxKeyItems) {
+			throw new Error(`The didDocument.authentication must have ${this.maxKeyItems} or less entries.`);
+		}
+
+		if (didDocument.assertionMethod && didDocument.assertionMethod.length > this.maxKeyItems) {
+			throw new Error(`The didDocument.assertionMethod must have ${this.maxKeyItems} or less entries.`);
+		}
+
+		if (didDocument.verificationMethod && didDocument.verificationMethod.length > this.maxKeyItems) {
+			throw new Error(`The didDocument.verificationMethod must have ${this.maxKeyItems} or less entries.`);
+		}
+
+		if (didDocument.service && didDocument.service.length > this.maxServiceItems) {
+			throw new Error(`The didDocument.service must have ${this.maxServiceItems} or less entries.`);
+		}
+
+		if (didDocument.capabilityDelegation) {
+			throw new Error(`The DID Method does not support didDocument.capabilityDelegation.`);
+		}
+
+		if (didDocument.capabilityInvocation) {
+			throw new Error(`The DID Method does not support didDocument.capabilityInvocation.`);
+		}
+
+		if (didDocument.alsoKnownAs) {
+			throw new Error(`The DID Method does not support didDocument.alsoKnownAs.`);
+		}
+
+		if (didDocument.keyAgreement) {
+			throw new Error(`The DID Method does not support didDocument.keyAgreement.`);
 		}
 	}
 
