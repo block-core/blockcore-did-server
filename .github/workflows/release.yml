@@ -1,9 +1,6 @@
 name: Build and Release Docker Image
 
 on:
-  push:
-    branches:
-      - feature/workflow
   release:
     types: [published]
   workflow_dispatch:
@@ -12,6 +9,10 @@ on:
         description: 'Release version'
         required: true
         default: github.event.release.tag_name
+      assets_url:
+        description: 'Assets URL'
+        required: true
+        default: github.event.release.assets_url
       publish_image:
         description: 'Publish image'
         required: true
@@ -38,7 +39,7 @@ jobs:
       uses: sondreb/action-release-download@master
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        url: ${{ github.event.release.assets_url }}
+        url: ${{ github.event.inputs.assets_url }}
         folder: "./artifacts/"
 
     - name: Display structure of downloaded files
