@@ -4,19 +4,6 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-    inputs:
-      release_version:
-        description: 'Release version'
-        required: true
-        default: github.event.release.tag_name
-      assets_url:
-        description: 'Assets URL'
-        required: true
-        default: github.event.release.assets_url
-      publish_image:
-        description: 'Publish image'
-        required: true
-        default: 'false'
 
 jobs:
   build:
@@ -39,21 +26,20 @@ jobs:
       uses: sondreb/action-release-download@master
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        url: ${{ github.event.inputs.assets_url }}
+        url: ${{ github.event.release.assets_url }}
         folder: "./artifacts/"
 
     - name: Extract asset and copy
       run: |
         mkdir ./build/
-        tar -C ./build -xzvf ./artifacts/blockcore-did-server-${{ github.event.inputs.release_version }}.tgz --strip-components=1
+        tar -C ./build -xzvf ./artifacts/blockcore-did-server-${{ github.event.release.tag_name }}.tgz --strip-components=1
         ls -R
         cp dockerfile ./build/dockerfile
 
     - name: Build the Docker container image
-      run: docker build -f "./build/dockerfile" -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.inputs.release_version }} "."
+      run: docker build -f "./build/dockerfile" -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.release.tag_name }} "."
 
-    - if: github.event.inputs.publish_image == 'true'
-      name: Login and Push to Docker Registry
+    - name: Login and Push to Docker Registry
       run: |
         docker login -u "sondreb" -p "${{secrets.DOCKER_KEY}}"
         docker push --all-tags blockcore/blockcore-did-server
