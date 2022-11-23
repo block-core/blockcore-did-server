@@ -1,3 +1,10 @@
+## <small>0.0.5 (2022-11-23)</small>
+
+* Include package-lock.json when publishing ([bdfb1bd](https://github.com/block-core/blockcore-did-server/commit/bdfb1bd))
+* Use "dist" folder for dockerfile ([cce12fb](https://github.com/block-core/blockcore-did-server/commit/cce12fb))
+
+
+
 ## <small>0.0.4 (2022-11-23)</small>
 
 * Improve the workflow ([ade9b9d](https://github.com/block-core/blockcore-did-server/commit/ade9b9d))

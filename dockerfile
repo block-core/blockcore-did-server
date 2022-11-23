@@ -5,7 +5,7 @@ ENV NODE_ENV production
 
 WORKDIR /host
 COPY --chown=node:node ./dist /host
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 USER node
 CMD ["dumb-init", "node", "--es-module-specifier-resolution=node", "dist/host.js"]
