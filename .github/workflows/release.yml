@@ -31,8 +31,8 @@ jobs:
 
     - name: Extract asset and copy
       run: |
-        mkdir ./app/
-        tar -C ./app/ -xzvf ./artifacts/blockcore-did-server-${{ github.event.release.tag_name }}.tgz --strip-components=1
+        mkdir ./dist/
+        tar -C ./dist/ -xzvf ./artifacts/blockcore-did-server-${{ github.event.release.tag_name }}.tgz --strip-components=1
         ls -R
 
     - name: Build the Docker container image
