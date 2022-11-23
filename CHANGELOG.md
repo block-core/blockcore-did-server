@@ -1,3 +1,10 @@
+## <small>0.0.2 (2022-11-23)</small>
+
+* Improve the dockerfile processing ([19d063e](https://github.com/block-core/blockcore-did-server/commit/19d063e))
+* Update version and changelog ([85e5023](https://github.com/block-core/blockcore-did-server/commit/85e5023))
+
+
+
 ## <small>0.0.1 (2022-11-22)</small>
 
 * Add "version" script to package ([40e4917](https://github.com/block-core/blockcore-did-server/commit/40e4917))
