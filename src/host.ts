@@ -26,7 +26,10 @@ process.once('SIGTERM', shutdown);
 
 const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 30;
 const port = process.env['PORT'] ? Number(process.env['PORT']) : 4250;
+const maxsize = process.env['MAXSIZE'] ?? '16kb';
+
 console.log(`RATE LIMIT: ${rateLimit} rpm`);
+console.log(`MAX SIZE: ${maxsize}`);
 
 app.use(cors());
 
@@ -40,7 +43,9 @@ const limiter = RateLimit.middleware({
 app.use(limiter);
 
 app.use(async (ctx, next) => {
-	ctx.body = await getRawBody(ctx.req);
+	ctx.body = await getRawBody(ctx.req, {
+		limit: maxsize,
+	});
 	await next();
 });
 
