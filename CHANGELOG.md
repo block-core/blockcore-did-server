@@ -1,3 +1,11 @@
+## <small>0.0.3 (2022-11-23)</small>
+
+* Ensure that we only copy the release output into image ([5630069](https://github.com/block-core/blockcore-did-server/commit/5630069))
+* Update CHANGELOG.md ([f27aed8](https://github.com/block-core/blockcore-did-server/commit/f27aed8))
+* Update version ([895891e](https://github.com/block-core/blockcore-did-server/commit/895891e))
+
+
+
 ## <small>0.0.2 (2022-11-23)</small>
 
 * Feature/workflow (#2) ([19e0217](https://github.com/block-core/blockcore-did-server/commit/19e0217)), closes [#2](https://github.com/block-core/blockcore-did-server/issues/2)
