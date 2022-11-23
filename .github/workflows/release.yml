@@ -47,13 +47,6 @@ jobs:
         mkdir ./build/
         tar -C ./build -xzvf ./artifacts/blockcore-did-server-${{ github.event.inputs.release_version }}.tgz --strip-components=1
         ls -R
-        copy dockerfile ./build/
-
-    - name: Extract asset and copy
-      run: |
-        mkdir ./build/
-        tar -C ./build -xzvf ./artifacts/blockcore-did-server-${{ github.event.inputs.release_version }}.tgz --strip-components=1
-        ls -R
         cp dockerfile ./build/dockerfile
 
     - name: Build the Docker container image
