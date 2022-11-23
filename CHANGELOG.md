@@ -1,6 +1,15 @@
+## <small>0.0.4 (2022-11-23)</small>
+
+* Improve the workflow ([ade9b9d](https://github.com/block-core/blockcore-did-server/commit/ade9b9d))
+* Update version and changelog + workflow fix ([cb4a326](https://github.com/block-core/blockcore-did-server/commit/cb4a326))
+
+
+
 ## <small>0.0.3 (2022-11-23)</small>
 
 * Ensure that we only copy the release output into image ([5630069](https://github.com/block-core/blockcore-did-server/commit/5630069))
+* Feature/workflow (#2) ([19e0217](https://github.com/block-core/blockcore-did-server/commit/19e0217)), closes [#2](https://github.com/block-core/blockcore-did-server/issues/2)
+* inputs likely cannot take variables ([09a97b9](https://github.com/block-core/blockcore-did-server/commit/09a97b9))
 * Update CHANGELOG.md ([f27aed8](https://github.com/block-core/blockcore-did-server/commit/f27aed8))
 * Update version ([895891e](https://github.com/block-core/blockcore-did-server/commit/895891e))
 
@@ -8,8 +17,6 @@
 
 ## <small>0.0.2 (2022-11-23)</small>
 
-* Feature/workflow (#2) ([19e0217](https://github.com/block-core/blockcore-did-server/commit/19e0217)), closes [#2](https://github.com/block-core/blockcore-did-server/issues/2)
-* inputs likely cannot take variables ([09a97b9](https://github.com/block-core/blockcore-did-server/commit/09a97b9))
 * Improve the dockerfile processing ([19d063e](https://github.com/block-core/blockcore-did-server/commit/19d063e))
 * Update version and changelog ([85e5023](https://github.com/block-core/blockcore-did-server/commit/85e5023))
 
