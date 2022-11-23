@@ -1,3 +1,10 @@
+## <small>0.0.7 (2022-11-23)</small>
+
+* Change the runtime user of container to be root ([c3c3c46](https://github.com/block-core/blockcore-did-server/commit/c3c3c46))
+* Update version ([fade621](https://github.com/block-core/blockcore-did-server/commit/fade621))
+
+
+
 ## <small>0.0.6 (2022-11-23)</small>
 
 * Remove package-lock and run normal install ([ed1d0e5](https://github.com/block-core/blockcore-did-server/commit/ed1d0e5))
