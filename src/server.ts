@@ -269,6 +269,10 @@ export class Server {
 			throw new Error('The didDocument.id must be set.');
 		}
 
+		if (didDocument.id.length > 100) {
+			throw new Error('The didDocument.id must be less than 100 characters.');
+		}
+
 		if (!didDocument.authentication || didDocument.authentication.length < 1) {
 			throw new Error('The didDocument.authentication must be set and contain minimum one entry.');
 		}
@@ -287,6 +291,24 @@ export class Server {
 
 		if (didDocument.service && didDocument.service.length > this.maxServiceItems) {
 			throw new Error(`The didDocument.service must have ${this.maxServiceItems} or less entries.`);
+		}
+
+		if (didDocument.service) {
+			for (let i = 0; i < didDocument.service.length; i++) {
+				const service = didDocument.service[i];
+
+				if (service && service.id.length > 100) {
+					throw new Error(`The service entries have an entry with 'id' more than 100 characters.`);
+				}
+
+				if (service && service.type.length > 100) {
+					throw new Error(`The service entries have an 'type' with more than 100 characters.`);
+				}
+
+				if (service && service.serviceEndpoint.length > 2000) {
+					throw new Error(`The service entries have an 'serviceEndpoint' with more than 2000 characters.`);
+				}
+			}
 		}
 
 		if (didDocument.capabilityDelegation) {
