@@ -45,7 +45,7 @@ jobs:
     # This will extract the .zip on root and re-create same structure as normal dev build,
     # so the same Dockerfile can be used for local debug/build and for the pipeline.
     - name: Extract asset
-      run: tar -xzvf ./artifacts/blockcore-did-server-${{ github.event.inputs.release_version }}.tgz ./build/ --strip-components=1
+      run: tar -C ./build -xzvf ./artifacts/blockcore-did-server-${{ github.event.inputs.release_version }}.tgz --strip-components=1
 
     - name: Display structure of downloaded files
       run: ls -R
