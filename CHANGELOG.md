@@ -1,5 +1,7 @@
 ## <small>0.0.2 (2022-11-23)</small>
 
+* Feature/workflow (#2) ([19e0217](https://github.com/block-core/blockcore-did-server/commit/19e0217)), closes [#2](https://github.com/block-core/blockcore-did-server/issues/2)
+* inputs likely cannot take variables ([09a97b9](https://github.com/block-core/blockcore-did-server/commit/09a97b9))
 * Improve the dockerfile processing ([19d063e](https://github.com/block-core/blockcore-did-server/commit/19d063e))
 * Update version and changelog ([85e5023](https://github.com/block-core/blockcore-did-server/commit/85e5023))
 
