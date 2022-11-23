@@ -10,7 +10,7 @@ COPY --chown=node:node . /host
 #RUN curl -Ls https://github.com/block-core/blockcore-did-server/releases/download/$VERSION/blockcore-did-server-$VERSION.tgz \
 #    | tar -xvz -C . --strip-components=1
 #RUN chown -R node:node /host
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 USER node
 CMD ["dumb-init", "node", "--es-module-specifier-resolution=node", "dist/host.js"]

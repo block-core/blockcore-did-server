@@ -52,7 +52,7 @@ jobs:
     - name: Build the Docker container image
       run: docker build -f "./build/dockerfile" -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.inputs.release_version }} --build-arg VERSION=${{ github.event.inputs.release_version }} "."
 
-    - if: github.event.inputs.publish_artifacts == 'true'
+    - if: github.event.inputs.publish_image == 'true'
       name: Login and Push to Docker Registry
       run: |
         echo "PUBLISHING IMAGE!!"
