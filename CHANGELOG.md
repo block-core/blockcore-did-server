@@ -1,3 +1,9 @@
+## <small>0.0.6 (2022-11-23)</small>
+
+* Remove package-lock and run normal install ([ed1d0e5](https://github.com/block-core/blockcore-did-server/commit/ed1d0e5))
+
+
+
 ## <small>0.0.5 (2022-11-23)</small>
 
 * Include package-lock.json when publishing ([bdfb1bd](https://github.com/block-core/blockcore-did-server/commit/bdfb1bd))

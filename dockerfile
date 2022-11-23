@@ -4,9 +4,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
 ENV NODE_ENV production
 
 WORKDIR /host
-COPY --chown=node:node ./dist /host
+
+#COPY --chown=node:node ./dist /host
+COPY ./dist /host
+
 RUN npm install --omit=dev
 
-USER node
+#RUN mkdir ./blockcore-did-database
+#USER node
 CMD ["dumb-init", "node", "--es-module-specifier-resolution=node", "dist/host.js"]
 EXPOSE 4250
