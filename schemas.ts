@@ -6,7 +6,7 @@ import standaloneCode from 'ajv/dist/standalone/index.js';
 /** Takes an input of schema namespace and returns the name segment of the file capitalized and prefixed with 'validate'. */
 function getId(id: string) {
 	const segments = id.substring(id.lastIndexOf('/') + 1, id.lastIndexOf('.')).split('-');
-	return 'validate' + segments.map((s) => s[0].toUpperCase() + s.substring(1)).join('');
+	return segments.map((s) => s[0].toUpperCase() + s.substring(1)).join('');
 }
 
 const ajv = new Ajv({

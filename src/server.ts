@@ -125,7 +125,8 @@ export class Server {
 		if (validate[validationMethod](data)) {
 			return true;
 		} else {
-			throw new Error(validate[validationMethod].errors[0].message);
+			const error = validate[validationMethod].errors[0];
+			throw new Error(`${validationMethod}${error.instancePath} ${error.message}`);
 		}
 	}
 
@@ -162,7 +163,7 @@ export class Server {
 
 		// The didDocument can be empty if the request is a delete one.
 		if (didDocument != null) {
-			this.validateSchema('validateDidDocument', didDocument);
+			this.validateSchema('DidDocument', didDocument);
 			this.validateDidDocument(didDocument);
 
 			// The first key in verificationMethod must ALWAYS be the key used to derive the DID ID.
