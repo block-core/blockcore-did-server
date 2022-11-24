@@ -1,5 +1,13 @@
 {
+	"$id": "https://schemas.blockcore.net/did-server/did-document.json",
 	"type": "object",
 	"additionalProperties": false,
-	"properties": {}
+	"properties": {
+		"id": {
+			"type": "string"
+		},
+		"controller": {
+			"type": "string"
+		}
+	}
 }

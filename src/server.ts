@@ -5,6 +5,7 @@ import { Config, DocumentEntry } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
 import { BlockcoreIdentityTools, BlockcoreIdentity } from '@blockcore/identity';
 import * as lexint from 'lexicographic-integer-encoding';
+import { validateDidDocument } from './schemas.js';
 
 export class Server {
 	private config: Config;
@@ -119,6 +120,15 @@ export class Server {
 		return this.config.store.wipe();
 	}
 
+	private validateSchema(validationMethod: any, data: any) {
+		if (validationMethod(data)) {
+			return true;
+		} else {
+			const msg = validationMethod.errors[0].message;
+			throw new Error(msg);
+		}
+	}
+
 	async request(rawRequest: Uint8Array | string) {
 		let requestBody;
 		let jws;
@@ -152,6 +162,7 @@ export class Server {
 
 		// The didDocument can be empty if the request is a delete one.
 		if (didDocument != null) {
+			this.validateSchema(validateDidDocument, didDocument);
 			this.validateDidDocument(didDocument);
 
 			// The first key in verificationMethod must ALWAYS be the key used to derive the DID ID.

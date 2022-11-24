@@ -91,7 +91,7 @@ router.get('/1.0/log/:sequence', async (ctx, _next) => {
 router.get('/1.0/identifiers/:did', async (ctx, _next) => {
 	try {
 		// ctx.request.ip
-		let version = undefined;
+		let version: number | undefined;
 
 		if (ctx.query['version']) {
 			version = Number(ctx.query['version']);

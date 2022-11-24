@@ -116,3 +116,15 @@ Some of our decisions for `dockerfile` is based of best-practices from here: htt
 # Debug the container if needed during development:
 docker run -it blockcore/blockcore-did-server sh
 ```
+
+## Schema Validation
+
+We rely on the avj library for schema validation and schemas is located in the `schemas` directory.
+
+To update the precompiled schema validation code, run:
+
+```sh
+npm run schemas
+```
+
+This will update the `/src/schemas.ts` file.
