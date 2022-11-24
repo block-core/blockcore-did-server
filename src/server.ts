@@ -13,7 +13,7 @@ export class Server {
 	private textDecoder = new TextDecoder();
 	private tools = new BlockcoreIdentityTools();
 
-	constructor(location = './blockcore-did-database', private didMethod: string) {
+	constructor(location = './blockcore-did-database', private didMethod: string = 'did:is') {
 		this.config = {
 			store: new Storage(location),
 		};

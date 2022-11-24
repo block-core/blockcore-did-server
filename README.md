@@ -128,3 +128,11 @@ npm run schemas
 ```
 
 This will update the `/src/schemas.ts` file.
+
+# References
+
+https://www.w3.org/TR/did-core/
+
+https://www.w3.org/TR/did-imp-guide/
+
+https://github.com/decentralized-identity/universal-resolver
