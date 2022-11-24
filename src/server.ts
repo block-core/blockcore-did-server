@@ -3,7 +3,7 @@ import { JWTDecoded } from 'did-jwt/lib/JWT.js';
 import { JsonWebKey, DIDResolutionResult, DIDDocument, VerificationMethod } from 'did-resolver';
 import { Config, DocumentEntry } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
-import { BlockcoreIdentityTools, BlockcoreIdentity } from '@blockcore/identity';
+import { BlockcoreIdentityTools } from '@blockcore/identity';
 import * as lexint from 'lexicographic-integer-encoding';
 // import { validateDidDocument } from './schemas.js';
 import * as validate from './schemas.cjs';
@@ -20,7 +20,7 @@ export class Server {
 	/** Value that controls how many services pr. document is allowed. */
 	private maxServiceItems = 10;
 
-	constructor(location = './blockcore-did-database') {
+	constructor(location = './blockcore-did-database', private didMethod: string) {
 		this.config = {
 			store: new Storage(location),
 		};
@@ -57,7 +57,7 @@ export class Server {
 	// https://github.com/block-core/blockcore-did-resolver
 	/** This is a generic resolve method that is to be used by the Universal DID Resolver */
 	async resolve(did: string, version?: number): Promise<DIDResolutionResult> {
-		if (!did.startsWith(BlockcoreIdentity.PREFIX)) {
+		if (!did.startsWith(this.didMethod)) {
 			return {
 				didDocument: null,
 				didDocumentMetadata: {},
@@ -68,7 +68,7 @@ export class Server {
 		let doc: DocumentEntry | undefined;
 
 		if (version != null) {
-			const queryId = `${did}:${version}`;
+			const queryId = `${did}#${version}`;
 			doc = await this.config.store.get(queryId, 'history');
 		} else {
 			doc = await this.config.store.get(did);
@@ -353,7 +353,7 @@ export class Server {
 		// Verify that the public key of the verificationMethod found generates the correct DID Subject.
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const identifier = this.tools.getIdentifierFromJsonWebKey(verificationMethod.publicKeyJwk!);
-		const didId = `${BlockcoreIdentity.PREFIX}:${identifier}`;
+		const didId = `${this.didMethod}:${identifier}`;
 
 		// The derived identfier from the initial key signing the request MUST equal the DID ID.
 		if (didId !== didDocument.id) {

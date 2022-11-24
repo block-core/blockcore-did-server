@@ -50,14 +50,20 @@ export class Storage implements DIDDocumentStore {
 		console.log('Current sequence: ', this.sequence);
 	}
 
-	async put(id: string, document: DocumentEntry) {
+	private databaseId(did: string) {
+		return did.substring(did.lastIndexOf(':') + 1);
+	}
+
+	async put(did: string, document: DocumentEntry) {
+		const id = this.databaseId(did);
+
 		// The latest DID Document is always stored in the primary database, while history is accessible in a sublevel.
 		const existingDocument = await this.get(id);
 
 		const update = this.db.sublevel<string, DocumentUpdate>('update', { keyEncoding: lexint.default('hex'), valueEncoding: 'json' });
 
 		const updateDoc: DocumentUpdate = {
-			did: id,
+			did: did,
 			version: Number(document.jws.payload['version']),
 		};
 
@@ -67,7 +73,7 @@ export class Storage implements DIDDocumentStore {
 		// Move the existing document to the sublevel.
 		if (existingDocument) {
 			const history = this.db.sublevel('history', { keyEncoding: 'utf8', valueEncoding: 'json' });
-			const historyId = `${id}:${existingDocument.jws.payload['version']}`;
+			const historyId = `${id}#${existingDocument.jws.payload['version']}`;
 
 			// Perform the operation in batch to ensure either both operations fails or both succed.
 			return this.db.batch([
@@ -107,7 +113,9 @@ export class Storage implements DIDDocumentStore {
 		}
 	}
 
-	async get(id: string, sublevel?: string): Promise<DocumentEntry | undefined> {
+	async get(did: string, sublevel?: string): Promise<DocumentEntry | undefined> {
+		const id = this.databaseId(did);
+
 		try {
 			if (sublevel) {
 				const entry = await this.db.sublevel(sublevel).get<string, DocumentEntry>(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
@@ -128,10 +136,12 @@ export class Storage implements DIDDocumentStore {
 
 	/** This is to be used by server administrators. */
 	async delete(did: string, sublevel?: string) {
+		const id = this.databaseId(did);
+
 		if (sublevel) {
-			return this.db.sublevel(sublevel).del(did);
+			return this.db.sublevel(sublevel).del(id);
 		} else {
-			return this.db.del(did);
+			return this.db.del(id);
 		}
 	}
 

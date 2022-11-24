@@ -10,9 +10,17 @@ import { Server } from './server';
 import { RateLimit } from 'koa2-ratelimit';
 import { SyncProcess } from './sync';
 
+const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 30;
+const port = process.env['PORT'] ? Number(process.env['PORT']) : 4250;
+const maxsize = process.env['MAXSIZE'] ?? '16kb';
+const didMethod = process.env['DID_METHOD'] ?? 'did:is';
 const database = process.env['DATABASE'];
+
+console.log(`RATE LIMIT: ${rateLimit} rpm`);
+console.log(`MAX SIZE: ${maxsize}`);
+
 const app = new Koa();
-const server = new Server(database);
+const server = new Server(database, didMethod);
 await server.start();
 
 async function shutdown(signal: any) {
@@ -23,13 +31,6 @@ async function shutdown(signal: any) {
 
 process.once('SIGINT', shutdown);
 process.once('SIGTERM', shutdown);
-
-const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 30;
-const port = process.env['PORT'] ? Number(process.env['PORT']) : 4250;
-const maxsize = process.env['MAXSIZE'] ?? '16kb';
-
-console.log(`RATE LIMIT: ${rateLimit} rpm`);
-console.log(`MAX SIZE: ${maxsize}`);
 
 app.use(cors());
 
