@@ -48,7 +48,7 @@ export class SyncProcess {
 				const doc = await this.server.resolve(did, version);
 
 				if (doc.didResolutionMetadata.error === 'notFound') {
-					const fetchUrl = `${server}/1.0/identifiers/${did}?version=${version}`;
+					const fetchUrl = `${server}/1.0/identifiers/${did}?versionId=${version}`;
 
 					console.log('Fetch URL: ', fetchUrl);
 					// TODO: The LATEST didDocument is not accessible with the version parameter... what to do?
