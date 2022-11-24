@@ -12,7 +12,7 @@ function getId(id: string) {
 const ajv = new Ajv({
 	code: {
 		source: true,
-		esm: true,
+		esm: false,
 	},
 });
 
@@ -28,4 +28,4 @@ let schemasFile = standaloneCode(ajv);
 // Append the ts-nocheck as we can't validate this file properly.
 schemasFile = '// @ts-nocheck\r\n' + schemasFile;
 
-writeFileSync('src/schemas.ts', schemasFile);
+writeFileSync('src/schemas.cjs', schemasFile);
