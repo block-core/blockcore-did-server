@@ -1,6 +1,6 @@
 import test from 'ava';
 import { createJWS, createJWT, decodeJWT, ES256KSigner } from 'did-jwt';
-import { Server } from '../src/server.js';
+import { didNotFound, Server } from '../src/server.js';
 
 test('Create the server', async (t) => {
 	const server = new Server();
@@ -11,7 +11,7 @@ test('Create the server', async (t) => {
 	await server.wipe();
 
 	const didResolution = await server.resolve('did:is:test');
-	t.assert(didResolution.didResolutionMetadata.error === 'notFound');
+	t.assert(didNotFound(didResolution));
 
 	// const didDocument = {
 	// 	services: ['link'],

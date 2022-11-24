@@ -7,6 +7,10 @@ import { BlockcoreIdentityTools } from '@blockcore/identity';
 import * as lexint from 'lexicographic-integer-encoding';
 import * as validate from './schemas.cjs';
 
+export function didNotFound(result: DIDResolutionResult) {
+	return result.didResolutionMetadata.error === 'notFound';
+}
+
 export class Server {
 	private config: Config;
 	// private textEncoder = new TextEncoder();
@@ -191,7 +195,7 @@ export class Server {
 			item = await this.resolve(did);
 
 			// Make sure we receive an notFound response
-			if (item.didResolutionMetadata?.error !== 'notFound') {
+			if (!didNotFound(item)) {
 				throw new Error('The DID Document already exists. You must increase the version number. Resolve the existing DID Document to get latest version id.');
 			}
 

@@ -1,4 +1,4 @@
-import { Server } from './server';
+import { didNotFound, Server } from './server';
 
 export class SyncProcess {
 	servers?: string[];
@@ -47,7 +47,7 @@ export class SyncProcess {
 
 				const doc = await this.server.resolve(did, version);
 
-				if (doc.didResolutionMetadata.error === 'notFound') {
+				if (didNotFound(doc)) {
 					const fetchUrl = `${server}/1.0/identifiers/${did}?versionId=${version}`;
 
 					console.log('Fetch URL: ', fetchUrl);
