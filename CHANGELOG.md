@@ -1,3 +1,13 @@
+## <small>0.0.9 (2022-11-24)</small>
+
+* Add full sync functionality ([20b3f9b](https://github.com/block-core/blockcore-did-server/commit/20b3f9b))
+* Add support for syncing whole history ([8e04309](https://github.com/block-core/blockcore-did-server/commit/8e04309))
+* Fix validation of new DID Documents with high version number ([140cded](https://github.com/block-core/blockcore-did-server/commit/140cded))
+* Make a function for didNotFound ([b289bdd](https://github.com/block-core/blockcore-did-server/commit/b289bdd))
+* Update version and changelog ([da74869](https://github.com/block-core/blockcore-did-server/commit/da74869))
+
+
+
 ## <small>0.0.8 (2022-11-24)</small>
 
 * Add ajv for schema validation ([344b582](https://github.com/block-core/blockcore-did-server/commit/344b582)), closes [#6](https://github.com/block-core/blockcore-did-server/issues/6)
