@@ -164,7 +164,6 @@ export class Server {
 		// The didDocument can be empty if the request is a delete one.
 		if (didDocument != null) {
 			this.validateSchema('DidDocument', didDocument);
-			this.validateDidDocument(didDocument);
 
 			// The first key in verificationMethod must ALWAYS be the key used to derive the DID ID.
 			// TODO: Consider simply doing a basic comparison between existing saved document and incoming document, not needing to perform too much operations.
@@ -273,70 +272,6 @@ export class Server {
 
 		if (jwk.kty !== 'EC' || jwk.crv !== 'secp256k1') {
 			throw new Error('Invalid jwk. kty MUST be EC. crv MUST be secp256k1.');
-		}
-	}
-
-	private validateDidDocument(didDocument: DIDDocument) {
-		if (!didDocument.id) {
-			throw new Error('The didDocument.id must be set.');
-		}
-
-		if (didDocument.id.length > 100) {
-			throw new Error('The didDocument.id must be less than 100 characters.');
-		}
-
-		if (!didDocument.authentication || didDocument.authentication.length < 1) {
-			throw new Error('The didDocument.authentication must be set and contain minimum one entry.');
-		}
-
-		if (didDocument.authentication.length > this.maxKeyItems) {
-			throw new Error(`The didDocument.authentication must have ${this.maxKeyItems} or less entries.`);
-		}
-
-		if (didDocument.assertionMethod && didDocument.assertionMethod.length > this.maxKeyItems) {
-			throw new Error(`The didDocument.assertionMethod must have ${this.maxKeyItems} or less entries.`);
-		}
-
-		if (didDocument.verificationMethod && didDocument.verificationMethod.length > this.maxKeyItems) {
-			throw new Error(`The didDocument.verificationMethod must have ${this.maxKeyItems} or less entries.`);
-		}
-
-		if (didDocument.service && didDocument.service.length > this.maxServiceItems) {
-			throw new Error(`The didDocument.service must have ${this.maxServiceItems} or less entries.`);
-		}
-
-		if (didDocument.service) {
-			for (let i = 0; i < didDocument.service.length; i++) {
-				const service = didDocument.service[i];
-
-				if (service && service.id.length > 100) {
-					throw new Error(`The service entries have an entry with 'id' more than 100 characters.`);
-				}
-
-				if (service && service.type.length > 100) {
-					throw new Error(`The service entries have an 'type' with more than 100 characters.`);
-				}
-
-				if (service && service.serviceEndpoint.length > 2000) {
-					throw new Error(`The service entries have an 'serviceEndpoint' with more than 2000 characters.`);
-				}
-			}
-		}
-
-		if (didDocument.capabilityDelegation) {
-			throw new Error(`The DID Method does not support didDocument.capabilityDelegation.`);
-		}
-
-		if (didDocument.capabilityInvocation) {
-			throw new Error(`The DID Method does not support didDocument.capabilityInvocation.`);
-		}
-
-		if (didDocument.alsoKnownAs) {
-			throw new Error(`The DID Method does not support didDocument.alsoKnownAs.`);
-		}
-
-		if (didDocument.keyAgreement) {
-			throw new Error(`The DID Method does not support didDocument.keyAgreement.`);
 		}
 	}
 
