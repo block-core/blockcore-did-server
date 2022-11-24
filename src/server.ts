@@ -199,7 +199,7 @@ export class Server {
 		} else {
 			item = await this.resolve(did);
 
-			if (item == null) {
+			if (item.didResolutionMetadata.error == 'notFound') {
 				throw new Error(`The DID Document does not exists on this server, you must set version to 0 to create a new DID Document.`);
 			}
 

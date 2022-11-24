@@ -6,6 +6,18 @@ This software can be used to implement your own DID Method.
 
 Blockcore uses this software to host the public available "did:is" DID Method.
 
+## Installation
+
+You should use docker-compose, example available here: [chaininfo/docker/BLOCKCORE/IDENTITY/docker-compose.yml](https://github.com/block-core/chaininfo/blob/master/docker/BLOCKCORE/IDENTITY/docker-compose.yml)
+
+This ensures that you have a persistent storage volume for the database.
+
+You can also run the server interactively for testing:
+
+```
+docker run -p 4250:4250 -it blockcore/blockcore-did-server:0.0.8
+```
+
 ## Architecture
 
 The DID Server is a straight forward service that stores and allows updates to DID Documents. All requests to the APIs are in the form of signed JWTs (JWS).
@@ -108,7 +120,7 @@ There will in the future be a separate API that anyone can use to request a comp
 
 The host of the DID Server can always manually delete (and block further sync, added to deny-list) entries in their databases. If access to keys are lost, a user can send a manual request to the service provider and ask to be deleted (wiped) from the database.
 
-## Docker
+## Docker Development
 
 Some of our decisions for `dockerfile` is based of best-practices from here: https://snyk.io/blog/10-best-practices-to-containerize-nodejs-web-applications-with-docker/
 
