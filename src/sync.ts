@@ -1,3 +1,4 @@
+import { ServerState } from './interfaces';
 import { didNotFound, Server } from './server';
 
 export class SyncProcess {
@@ -8,9 +9,8 @@ export class SyncProcess {
 		console.log('DID Servers:', this.servers);
 	}
 
-	async process(sequence: number, server: string) {
-		const url = `${server}/1.0/log/${sequence}`;
-		console.log('Fetching:', url);
+	async process(server: string, state: ServerState) {
+		const url = `${server}/1.0/log/${state.sequence}`;
 
 		// Used to populate local instance of Blockcore DID Server:
 		const rawResponse = await fetch(url, {
@@ -23,10 +23,9 @@ export class SyncProcess {
 
 		const content = await rawResponse.json();
 
-		console.log(content.length);
-
 		if (content.length == 0) {
-			console.log('No more data to process, sync completed.');
+			console.log(`${server}: Sync completed.`);
+			await this.server.setState(server, state);
 			return;
 		}
 
@@ -34,17 +33,12 @@ export class SyncProcess {
 			const did = content[i].did;
 			const version = content[i].ver;
 
-			console.log('Do we have DID: ', did);
-			console.log('Version: ', version);
-
 			const doc = await this.server.resolve(did, version);
 
 			if (didNotFound(doc)) {
 				const fetchUrl = `${server}/1.0/identifiers/${did}?versionId=${version}`;
 
-				console.log('Fetch URL: ', fetchUrl);
-				// TODO: The LATEST didDocument is not accessible with the version parameter... what to do?
-				const rawResponse2 = await fetch(fetchUrl, {
+				const didResolutionResponse = await fetch(fetchUrl, {
 					method: 'GET',
 					headers: {
 						Accept: 'application/json',
@@ -52,22 +46,24 @@ export class SyncProcess {
 					},
 				});
 
-				const content = await rawResponse2.json();
+				const didResolution = await didResolutionResponse.json();
 
-				if (content) {
-					const jws = content.didDocumentMetadata.proof.jwt;
+				if (didResolution) {
+					const jws = didResolution.didDocumentMetadata.proof.jwt;
 					await this.server.request(jws);
 				}
 			}
 
 			// Keep track of the last sequence:
-			sequence = content[i].seq;
+			state.sequence = content[i].seq;
 		}
 
-		console.log('Last sequence: ', sequence);
+		// Persist the latest sync state in case of crash during sync we won't have to check older logs.
+		await this.server.setState(server, state);
+		console.log(`${server}: Run sync from ${state.sequence}.`);
 
 		// Continue processing until we're done.
-		await this.process(sequence, server);
+		await this.process(server, state);
 	}
 
 	async run() {
@@ -85,10 +81,17 @@ export class SyncProcess {
 				continue;
 			}
 
-			// Load last sequence for this server:
-			const sequence = 0;
+			let state = await this.server.getState(server);
 
-			await this.process(sequence, server);
+			if (!state) {
+				state = {
+					date: new Date(),
+					sequence: 0,
+				};
+			}
+
+			console.log(`${server}: Run sync from ${state.sequence}.`);
+			await this.process(server, state);
 		}
 	}
 }

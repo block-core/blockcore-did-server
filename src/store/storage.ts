@@ -1,9 +1,11 @@
 import { Level } from 'level';
-import { DIDDocumentStore, DocumentEntry, DocumentUpdate } from '../interfaces/index.js';
+import { DocumentEntry, DocumentUpdate, ServerState } from '../interfaces/index.js';
 import { sleep } from '../utils.js';
 import * as lexint from 'lexicographic-integer-encoding';
 
-export class Storage implements DIDDocumentStore {
+export class ServerStateStorage {}
+
+export class Storage {
 	db: Level<string | number, DocumentEntry | any>;
 	sequence = 0;
 
@@ -50,20 +52,19 @@ export class Storage implements DIDDocumentStore {
 		console.log('Current sequence: ', this.sequence);
 	}
 
-	private databaseId(did: string) {
-		return did.substring(did.lastIndexOf(':') + 1);
+	async putServerState(url: string, document: ServerState) {
+		const db = this.db.sublevel<string, ServerState>('serverstate', { keyEncoding: 'utf8', valueEncoding: 'json' });
+		return db.put(url, document);
 	}
 
-	async put(did: string, document: DocumentEntry) {
-		const id = this.databaseId(did);
-
+	async putDocumentEntry(id: string, document: DocumentEntry) {
 		// The latest DID Document is always stored in the primary database, while history is accessible in a sublevel.
-		const existingDocument = await this.get(id);
+		const existingDocument = await this.get<DocumentEntry>(id);
 
 		const update = this.db.sublevel<string, DocumentUpdate>('update', { keyEncoding: lexint.default('hex'), valueEncoding: 'json' });
 
 		const updateDoc: DocumentUpdate = {
-			did: did,
+			id: id,
 			version: Number(document.jws.payload['version']),
 		};
 
@@ -113,15 +114,13 @@ export class Storage implements DIDDocumentStore {
 		}
 	}
 
-	async get(did: string, sublevel?: string): Promise<DocumentEntry | undefined> {
-		const id = this.databaseId(did);
-
+	async get<T>(id: string, sublevel?: string): Promise<T | undefined> {
 		try {
 			if (sublevel) {
-				const entry = await this.db.sublevel(sublevel).get<string, DocumentEntry>(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+				const entry = await this.db.sublevel(sublevel).get<string, T>(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
 				return entry;
 			} else {
-				const entry = await this.db.get<string, DocumentEntry>(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
+				const entry = await this.db.get<string, T>(id, { keyEncoding: 'utf8', valueEncoding: 'json' });
 				return entry;
 			}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,9 +134,7 @@ export class Storage implements DIDDocumentStore {
 	}
 
 	/** This is to be used by server administrators. */
-	async delete(did: string, sublevel?: string) {
-		const id = this.databaseId(did);
-
+	async delete(id: string, sublevel?: string) {
 		if (sublevel) {
 			return this.db.sublevel(sublevel).del(id);
 		} else {

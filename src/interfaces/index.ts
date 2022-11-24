@@ -1,24 +1,23 @@
 import { JWTDecoded } from 'did-jwt/lib/JWT';
-import { Level } from 'level';
 
 /** DID Document Store that have specific logic in operations related to DID operations. */
-export interface DIDDocumentStore {
-	open(): Promise<void>;
+// export interface DIDDocumentStore {
+// 	open(): Promise<void>;
 
-	close(): Promise<void>;
+// 	close(): Promise<void>;
 
-	put(id: string, document: DocumentEntry): Promise<void>;
+// 	put(id: string, document: DocumentEntry, sublevel?: string): Promise<void>;
 
-	get(id: string, sublevel?: string): Promise<DocumentEntry | undefined>;
+// 	get(id: string, sublevel?: string): Promise<DocumentEntry | undefined>;
 
-	delete(id: string, sublevel?: string): Promise<void>;
+// 	delete(id: string, sublevel?: string): Promise<void>;
 
-	database(): Level<string | number, DocumentEntry>;
+// 	database(): Level<string | number, DocumentEntry>;
 
-	wipe(): Promise<void>;
+// 	wipe(): Promise<void>;
 
-	initialize(): Promise<void>;
-}
+// 	initialize(): Promise<void>;
+// }
 
 export interface DocumentEntry {
 	date: Date;
@@ -26,12 +25,13 @@ export interface DocumentEntry {
 }
 
 export interface DocumentUpdate {
-	did: string;
+	id: string;
 	version: number;
 }
 
-export interface Config {
-	store: DIDDocumentStore;
+export interface ServerState {
+	date: Date,
+	sequence: number;
 }
 
 // export interface DIDDocument {

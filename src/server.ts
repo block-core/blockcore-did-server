@@ -1,7 +1,7 @@
 import { decodeJWT, verifyJWS } from 'did-jwt';
 import { JWTDecoded } from 'did-jwt/lib/JWT.js';
 import { JsonWebKey, DIDResolutionResult, DIDDocument, VerificationMethod } from 'did-resolver';
-import { Config, DocumentEntry } from './interfaces/index.js';
+import { DocumentEntry, ServerState } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
 import { BlockcoreIdentityTools } from '@blockcore/identity';
 import * as lexint from 'lexicographic-integer-encoding';
@@ -12,38 +12,49 @@ export function didNotFound(result: DIDResolutionResult) {
 }
 
 export class Server {
-	private config: Config;
+	private storage: Storage;
 	// private textEncoder = new TextEncoder();
 	private textDecoder = new TextDecoder();
 	private tools = new BlockcoreIdentityTools();
 
 	constructor(location = './blockcore-did-database', private didMethod: string = 'did:is') {
-		this.config = {
-			store: new Storage(location),
-		};
+		this.storage = new Storage(location);
 	}
 
 	async start() {
 		console.log('Starting Server...');
 
-		await this.config.store.open();
+		await this.storage.open();
 
-		return this.config.store.initialize();
+		return this.storage.initialize();
 	}
 
 	async stop() {
-		return this.config.store.close();
+		return this.storage.close();
+	}
+
+	async getState(url: string) {
+		return await this.storage.get<ServerState>(url, 'serverstate');
+	}
+
+	async setState(server: string, state: ServerState) {
+		this.storage.putServerState(server, state);
+	}
+
+	/** Extracts the domain and/or public key from the DID. */
+	private databaseId(did: string) {
+		return did.substring(did.lastIndexOf(':') + 1);
 	}
 
 	async list(sequence: number) {
-		const db = this.config.store.database();
+		const db = this.storage.database();
 		const iterator = db.sublevel('update').iterator<string, any>({ gt: sequence.toString(), limit: 5, keyEncoding: lexint.default('hex'), valueEncoding: 'json' });
 		const dids: any[] = [];
 
 		for await (const [key, value] of iterator) {
 			dids.push({
 				seq: key,
-				did: value.did,
+				did: `${this.didMethod}:${value.id}`,
 				ver: value.version,
 			});
 		}
@@ -63,21 +74,22 @@ export class Server {
 		}
 
 		let doc: DocumentEntry | undefined;
+		const id = this.databaseId(did);
 
 		if (version != null) {
-			const queryId = `${did}#${version}`;
-			doc = await this.config.store.get(queryId, 'history');
+			const queryId = `${id}#${version}`;
+			doc = await this.storage.get(queryId, 'history');
 
 			// If the historical version is not found, we will check if the requested version is same as the last active one and return that.
 			if (!doc) {
-				const tempDoc = await this.config.store.get(did);
+				const tempDoc = await this.storage.get<DocumentEntry>(id);
 
 				if (Number(tempDoc?.jws.payload['version']) === version) {
 					doc = tempDoc;
 				}
 			}
 		} else {
-			doc = await this.config.store.get(did);
+			doc = await this.storage.get<DocumentEntry>(did);
 		}
 
 		if (!doc) {
@@ -120,11 +132,11 @@ export class Server {
 	}
 
 	async update(did: string, document: DocumentEntry) {
-		return this.config.store.put(did, document);
+		return this.storage.putDocumentEntry(did, document);
 	}
 
 	async wipe() {
-		return this.config.store.wipe();
+		return this.storage.wipe();
 	}
 
 	private validateSchema(validationMethod: any, data: any) {

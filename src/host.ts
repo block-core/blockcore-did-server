@@ -12,6 +12,7 @@ import { SyncProcess } from './sync';
 
 const rateLimit = process.env['RATELIMIT'] ? Number(process.env['RATELIMIT']) : 30;
 const port = process.env['PORT'] ? Number(process.env['PORT']) : 4250;
+const syncInterval = process.env['SYNC_INTERVAL'] ? Number(process.env['SYNC_INTERVAL']) : 60;
 const maxsize = process.env['MAXSIZE'] ?? '16kb';
 const didMethod = process.env['DID_METHOD'] ?? 'did:is';
 const database = process.env['DATABASE'];
@@ -137,7 +138,7 @@ const syncFunction = async () => {
 
 	setTimeout(() => {
 		syncFunction();
-	}, 60000);
+	}, syncInterval * 1000);
 };
 
 try {
