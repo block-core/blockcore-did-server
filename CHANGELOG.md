@@ -1,3 +1,23 @@
+## <small>0.0.8 (2022-11-24)</small>
+
+* Add ajv for schema validation ([344b582](https://github.com/block-core/blockcore-did-server/commit/344b582)), closes [#6](https://github.com/block-core/blockcore-did-server/issues/6)
+* Add logic to get the latest active DID Document in version query ([ba6140e](https://github.com/block-core/blockcore-did-server/commit/ba6140e))
+* Add max limit on keys and services to 10 ([0c9b731](https://github.com/block-core/blockcore-did-server/commit/0c9b731)), closes [#5](https://github.com/block-core/blockcore-did-server/issues/5)
+* Add maxsize body limit for all requests ([a253927](https://github.com/block-core/blockcore-did-server/commit/a253927)), closes [#5](https://github.com/block-core/blockcore-did-server/issues/5)
+* Add references in README ([eeb8f41](https://github.com/block-core/blockcore-did-server/commit/eeb8f41))
+* Add support for custom DID Method ([bc785d8](https://github.com/block-core/blockcore-did-server/commit/bc785d8))
+* Add task to generate schema validators ([40a0735](https://github.com/block-core/blockcore-did-server/commit/40a0735))
+* Add validation of JSON using schemas ([62d6e1e](https://github.com/block-core/blockcore-did-server/commit/62d6e1e)), closes [#6](https://github.com/block-core/blockcore-did-server/issues/6)
+* Add validation of service entries ([0a4236f](https://github.com/block-core/blockcore-did-server/commit/0a4236f)), closes [#5](https://github.com/block-core/blockcore-did-server/issues/5)
+* Change the query parameter from "version" to "versionId" ([ff8104f](https://github.com/block-core/blockcore-did-server/commit/ff8104f))
+* Fix a version query bug ([2739966](https://github.com/block-core/blockcore-did-server/commit/2739966))
+* Generate CommonJS format from Ajv ([b9fd911](https://github.com/block-core/blockcore-did-server/commit/b9fd911))
+* Improve schema validation error message ([ff9a784](https://github.com/block-core/blockcore-did-server/commit/ff9a784))
+* Remove the manual DID Document validation (replaced with ajv) ([8df3673](https://github.com/block-core/blockcore-did-server/commit/8df3673))
+* Update version and changelog ([3f088d1](https://github.com/block-core/blockcore-did-server/commit/3f088d1))
+
+
+
 ## <small>0.0.7 (2022-11-23)</small>
 
 * Change the runtime user of container to be root ([c3c3c46](https://github.com/block-core/blockcore-did-server/commit/c3c3c46))
