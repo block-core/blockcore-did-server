@@ -5,7 +5,6 @@ import { Config, DocumentEntry } from './interfaces/index.js';
 import { Storage } from './store/storage.js';
 import { BlockcoreIdentityTools } from '@blockcore/identity';
 import * as lexint from 'lexicographic-integer-encoding';
-// import { validateDidDocument } from './schemas.js';
 import * as validate from './schemas.cjs';
 
 export class Server {
@@ -13,12 +12,6 @@ export class Server {
 	// private textEncoder = new TextEncoder();
 	private textDecoder = new TextDecoder();
 	private tools = new BlockcoreIdentityTools();
-
-	/** Value that controls how many keys pr. section is allowed. */
-	private maxKeyItems = 10;
-
-	/** Value that controls how many services pr. document is allowed. */
-	private maxServiceItems = 10;
 
 	constructor(location = './blockcore-did-database', private didMethod: string) {
 		this.config = {
@@ -70,6 +63,15 @@ export class Server {
 		if (version != null) {
 			const queryId = `${did}#${version}`;
 			doc = await this.config.store.get(queryId, 'history');
+
+			// If the historical version is not found, we will check if the requested version is same as the last active one and return that.
+			if (!doc) {
+				const tempDoc = await this.config.store.get(did);
+
+				if (Number(tempDoc?.jws.payload['version']) === version) {
+					doc = tempDoc;
+				}
+			}
 		} else {
 			doc = await this.config.store.get(did);
 		}
