@@ -94,7 +94,7 @@ router.get('/1.0/identifiers/:did', async (ctx, _next) => {
 		// ctx.request.ip
 		let versionId: number | undefined;
 
-		if (ctx.query['version']) {
+		if (ctx.query['versionId']) {
 			versionId = Number(ctx.query['versionId']);
 		}
 
