@@ -1,3 +1,10 @@
+## <small>0.0.11 (2022-11-25)</small>
+
+* Fix bug with resolve on active DID Document ([585bf8f](https://github.com/block-core/blockcore-did-server/commit/585bf8f))
+* Update version and changelog ([05b4788](https://github.com/block-core/blockcore-did-server/commit/05b4788))
+
+
+
 ## <small>0.0.10 (2022-11-25)</small>
 
 * Fix bug with duplicate DID Method prefix in operations log ([2b9374f](https://github.com/block-core/blockcore-did-server/commit/2b9374f))
