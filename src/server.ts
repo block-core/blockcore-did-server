@@ -89,7 +89,7 @@ export class Server {
 				}
 			}
 		} else {
-			doc = await this.storage.get<DocumentEntry>(did);
+			doc = await this.storage.get<DocumentEntry>(id);
 		}
 
 		if (!doc) {
