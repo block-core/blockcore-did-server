@@ -132,7 +132,8 @@ export class Server {
 	}
 
 	async update(did: string, document: DocumentEntry) {
-		return this.storage.putDocumentEntry(did, document);
+		const id = this.databaseId(did);
+		return this.storage.putDocumentEntry(id, document);
 	}
 
 	async wipe() {

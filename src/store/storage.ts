@@ -57,6 +57,7 @@ export class Storage {
 		return db.put(url, document);
 	}
 
+	/** The ID provided should be without DID Method prefix. */
 	async putDocumentEntry(id: string, document: DocumentEntry) {
 		// The latest DID Document is always stored in the primary database, while history is accessible in a sublevel.
 		const existingDocument = await this.get<DocumentEntry>(id);
