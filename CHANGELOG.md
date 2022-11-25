@@ -1,3 +1,10 @@
+## <small>0.0.10 (2022-11-25)</small>
+
+* Fix bug with duplicate DID Method prefix in operations log ([2b9374f](https://github.com/block-core/blockcore-did-server/commit/2b9374f))
+* Update version and changelog ([bd73829](https://github.com/block-core/blockcore-did-server/commit/bd73829))
+
+
+
 ## <small>0.0.9 (2022-11-24)</small>
 
 * Add full sync functionality ([20b3f9b](https://github.com/block-core/blockcore-did-server/commit/20b3f9b))
