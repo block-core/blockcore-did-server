@@ -64,12 +64,11 @@ export class Server {
 
 	// https://github.com/block-core/blockcore-did-resolver
 	/** This is a generic resolve method that is to be used by the Universal DID Resolver */
-	async resolve(did: string, version?: number): Promise<DIDResolutionResult> {
+	async resolve(did: string, version?: number): Promise<{ status: number; result: DIDResolutionResult }> {
 		if (!did.startsWith(this.didMethod)) {
 			return {
-				didDocument: null,
-				didDocumentMetadata: {},
-				didResolutionMetadata: { error: 'unsupportedDidMethod' },
+				status: 501,
+				result: { didDocument: null, didDocumentMetadata: {}, didResolutionMetadata: { error: 'methodNotSupported' } },
 			};
 		}
 
@@ -94,9 +93,12 @@ export class Server {
 
 		if (!doc) {
 			return {
-				didDocument: null,
-				didDocumentMetadata: {},
-				didResolutionMetadata: { error: 'notFound' },
+				status: 404,
+				result: {
+					didDocument: null,
+					didDocumentMetadata: {},
+					didResolutionMetadata: { error: 'notFound' },
+				},
 			};
 		}
 
@@ -128,7 +130,7 @@ export class Server {
 			},
 		};
 
-		return result;
+		return { status: 200, result: result };
 	}
 
 	async update(did: string, document: DocumentEntry) {

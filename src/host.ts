@@ -65,9 +65,9 @@ const router = new Router();
 router.post('/', async (ctx, _next) => {
 	try {
 		const response = await server.request(ctx.body);
-		setResponse(response, ctx.response);
+		setResponse(response, ctx.response, 200);
 	} catch (err: any) {
-		setResponse({ error: err.message, status: 500 }, ctx.response);
+		setResponse({ error: err.message }, ctx.response, 500);
 	}
 });
 
@@ -77,16 +77,16 @@ router.get('/.well-known/did-configuration.json', async (ctx, _next) => {
 		linked_dids: [process.env['VC']],
 	};
 
-	setResponse(configuration, ctx.response);
+	setResponse(configuration, ctx.response, 200);
 });
 
 router.get('/1.0/log/:sequence', async (ctx, _next) => {
 	try {
 		const sequence = Number(ctx.params['sequence']);
 		const items = await server.list(sequence);
-		setResponse(items, ctx.response);
+		setResponse(items, ctx.response, 200);
 	} catch (err: any) {
-		setResponse({ error: err.message, status: 500 }, ctx.response);
+		setResponse({ error: err.message }, ctx.response, 500);
 	}
 });
 
@@ -101,10 +101,10 @@ router.get('/1.0/identifiers/:did', async (ctx, _next) => {
 
 		const did = String(ctx.params['did']);
 
-		const didDocument = await server.resolve(did, versionId);
-		setResponse(didDocument, ctx.response);
+		const resolution = await server.resolve(did, versionId);
+		setResponse(resolution.result, ctx.response, resolution.status);
 	} catch (err: any) {
-		setResponse({ error: err.message, status: 500 }, ctx.response);
+		setResponse({ didDocument: null, didDocumentMetadata: {}, didResolutionMetadata: { error: 'internalError', description: err.message } }, ctx.response, 500);
 	}
 });
 
@@ -114,7 +114,7 @@ router.get('/1.0/identifiers/:did', async (ctx, _next) => {
 // });
 
 router.get('/', async (ctx, _next) => {
-	setResponse({ online: 'true', wellKnown: '/.well-known/did-configuration.json', example: '/1.0/identifiers/did:is:0f254e55a2633d468e92aa7dd5a76c0c9101fab8e282c8c20b3fefde0d68f217' }, ctx.response);
+	setResponse({ online: 'true', wellKnown: '/.well-known/did-configuration.json', example: '/1.0/identifiers/did:is:0f254e55a2633d468e92aa7dd5a76c0c9101fab8e282c8c20b3fefde0d68f217' }, ctx.response, 200);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
@@ -155,8 +155,9 @@ try {
 	process.exit(1);
 }
 
-const setResponse = (response: any, koaResponse: Koa.Response) => {
-	koaResponse.status = response.status ? response.status : 200;
+const setResponse = (response: any, koaResponse: Koa.Response, statusCode: number) => {
+	koaResponse.status = statusCode;
+	// koaResponse.status = response.status ? response.status : 200;
 	koaResponse.set('Content-Type', 'application/json');
 	// koaResponse.body = JSON.stringify(response);
 	koaResponse.body = response;
