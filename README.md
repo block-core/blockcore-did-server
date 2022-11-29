@@ -20,7 +20,7 @@ docker run -p 4250:4250 -it blockcore/blockcore-did-server:0.0.8
 
 ## Architecture
 
-The DID Server is a straight forward service that stores and allows updates to DID Documents. All requests to the APIs are in the form of signed JWTs (JWS).
+The DID Server is a straight forward service that stores and allows updates to DID Documents. All requests to the APIs are in the form of signed JWTs (JWS). The DID Server is also known as [Verifiable Data Registry](https://www.w3.org/TR/did-imp-guide/#verifiable-data-registry).
 
 The first key in the verificationMethod is required to be the public key that is used to derive the DID, e.g. "did:is:publickey".
 
