@@ -35,7 +35,7 @@ export class SyncProcess {
 
 			const doc = await this.server.resolve(did, version);
 
-			if (didNotFound(doc)) {
+			if (didNotFound(doc.result)) {
 				const fetchUrl = `${server}/1.0/identifiers/${did}?versionId=${version}`;
 
 				const didResolutionResponse = await fetch(fetchUrl, {

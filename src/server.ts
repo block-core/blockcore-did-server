@@ -178,7 +178,7 @@ export class Server {
 		const version = jws.payload['version'];
 		const kid = jws.header['kid'];
 
-		let item: DIDResolutionResult;
+		let item: { status: number, result: DIDResolutionResult };
 		let verificationMethodID: VerificationMethod;
 		let verificationMethod: VerificationMethod;
 
@@ -210,7 +210,7 @@ export class Server {
 			item = await this.resolve(did);
 
 			// Make sure we receive an notFound response
-			if (!didNotFound(item)) {
+			if (!didNotFound(item.result)) {
 				throw new Error('The DID Document already exists. You must increase the version number. Resolve the existing DID Document to get latest version id.');
 			}
 
@@ -218,25 +218,25 @@ export class Server {
 		} else {
 			item = await this.resolve(did);
 
-			if (item.didResolutionMetadata.error == 'notFound') {
+			if (item.result.didResolutionMetadata.error == 'notFound') {
 				throw new Error(`The DID Document does not exists on this server, you must set version to 0 to create a new DID Document.`);
 			}
 
-			if (item.didDocumentMetadata.deactivated) {
+			if (item.result.didDocumentMetadata.deactivated) {
 				throw new Error('The DID Document has been deactivated and cannot be updated any longer.');
 			}
 
-			if (item.didDocument == null) {
+			if (item.result.didDocument == null) {
 				throw new Error('The DID Document has been deactivated and cannot be updated any longer.');
 			}
 
 			// Verify that the version is same as next version:
-			if (Number(item.didDocumentMetadata.nextVersionId) !== Number(version)) {
+			if (Number(item.result.didDocumentMetadata.nextVersionId) !== Number(version)) {
 				throw new Error('The version of the updated DID Document must correspond to the nextVersionId of the current active DID Document.');
 			}
 
 			// Get the verification method specified in the kid from the current active document.
-			verificationMethod = this.getAuthenticationMethod(kid, item.didDocument);
+			verificationMethod = this.getAuthenticationMethod(kid, item.result.didDocument);
 		}
 
 		// Validate the signature of the selected verification method used in the kid and the raw jws payload.
