@@ -36,9 +36,9 @@ jobs:
         ls -R
 
     - name: Build the Docker container image
-      run: docker build . -t blockcore/blockcore-did-server:latest -t blockcore/blockcore-did-server:${{ github.event.release.tag_name }}
+      run: docker build . -t blockcore/did-server:latest -t blockcore/did-server:${{ github.event.release.tag_name }}
 
     - name: Login and Push to Docker Registry
       run: |
         docker login -u "sondreb" -p "${{secrets.DOCKER_KEY}}"
-        docker push --all-tags blockcore/blockcore-did-server
+        docker push --all-tags blockcore/did-server
